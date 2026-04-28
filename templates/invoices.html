@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+{% url 'add_invoice' as add_url %}
+{% include 'includes/page_header.html' with title='الفواتير' subtitle='عرض وطباعة فواتير الإصلاح' action_url=add_url action_label='إضافة فاتورة' %}
+<div class="section-card">
+    <table class="data-table">
+        <thead><tr><th>الرقم</th><th>التاريخ</th><th>العميل</th><th>السيارة</th><th>الحالة</th><th>الإجمالي</th><th>الفاتورة</th></tr></thead>
+        <tbody>
+            {% for invoice in invoices %}
+                <tr>
+                    <td>{{ invoice.pk }}</td>
+                    <td>{{ invoice.date }}</td>
+                    <td>{{ invoice.car.customer.name }}</td>
+                    <td>{{ invoice.car }}</td>
+                    <td>{{ invoice.get_status_display }}</td>
+                    <td>{{ invoice.total_cost|floatformat:2 }}</td>
+                    <td><a class="btn btn-primary" href="{% url 'view_invoice' invoice.pk %}">عرض</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7">لا توجد فواتير.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

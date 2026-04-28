@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'includes/page_header.html' with title=page_title subtitle=page_subtitle %}
+<form method="post" class="stack-form section-card">
+    {% csrf_token %}
+    {% include 'includes/form_fields.html' with form=form %}
+    <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+</form>
+{% endblock %}

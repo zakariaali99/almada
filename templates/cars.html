@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+{% url 'add_car' as add_url %}
+{% include 'includes/page_header.html' with title='السيارات' subtitle='كل السيارات المسجلة في النظام' action_url=add_url action_label='إضافة سيارة' %}
+<div class="section-card">
+    <table class="data-table">
+        <thead><tr><th>الشركة</th><th>الموديل</th><th>السنة</th><th>اللوحة</th><th>العميل</th><th>الإجراءات</th></tr></thead>
+        <tbody>
+            {% for car in cars %}
+                <tr>
+                    <td>{{ car.make }}</td><td>{{ car.model|default:'-' }}</td><td>{{ car.year|default:'-' }}</td><td>{{ car.license_plate|default:'-' }}</td><td>{{ car.customer.name }}</td>
+                    <td class="actions">
+                        <a class="btn btn-secondary" href="{% url 'car_details' car.pk %}">عرض</a>
+                        <a class="btn btn-warning" href="{% url 'edit_car' car.pk %}">تعديل</a>
+                        <a class="btn btn-danger" href="{% url 'delete_car' car.pk %}">حذف</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6">لا توجد سيارات.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

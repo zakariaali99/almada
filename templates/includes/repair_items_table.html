@@ -1,0 +1,97 @@
+<div class="section-card">
+    <div class="section-card-header">
+        <h2>عناصر الإصلاح</h2>
+        <button type="button" class="btn btn-secondary" id="add-item-row">إضافة عنصر</button>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table" id="repair-items-table">
+            <thead>
+                <tr>
+                    <th>النوع</th>
+                    <th>المنتج</th>
+                    <th>نوع السعر</th>
+                    <th>الوصف</th>
+                    <th>الكمية</th>
+                    <th>السعر</th>
+                    <th>الإجمالي</th>
+                    <th>حذف</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if items %}
+                    {% for item in items %}
+                        <tr class="repair-item-row">
+                            <td>
+                                <input type="hidden" name="item_id[]" value="{{ item.id }}">
+                                <select name="item_type[]" class="item-type">
+                                    <option value="قطع غيار" {% if item.item_type == 'قطع غيار' %}selected{% endif %}>قطع غيار</option>
+                                    <option value="زيوت" {% if item.item_type == 'زيوت' %}selected{% endif %}>زيوت</option>
+                                    <option value="أخرى" {% if item.item_type == 'أخرى' %}selected{% endif %}>أخرى</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="item_product[]" class="item-product">
+                                    <option value="">بدون منتج</option>
+                                    {% for product in products %}
+                                        <option value="{{ product.id }}" data-type="{{ product.product_type }}" data-wholesale="{{ product.wholesale_price }}" data-retail="{{ product.retail_price }}" data-description="{{ product.name }}" {% if item.product_id == product.id %}selected{% endif %}>
+                                            {{ product.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <select name="item_price_type[]" class="item-price-type">
+                                    <option value="">عادي</option>
+                                    <option value="wholesale" {% if item.price_type == 'wholesale' %}selected{% endif %}>جملة</option>
+                                    <option value="retail" {% if item.price_type == 'retail' %}selected{% endif %}>قطاعي</option>
+                                </select>
+                            </td>
+                            <td><input type="text" name="item_description[]" value="{{ item.description }}" class="item-description"></td>
+                            <td><input type="number" min="1" name="item_quantity[]" value="{{ item.quantity }}" class="item-quantity"></td>
+                            <td><input type="number" min="0" step="0.01" name="item_price[]" value="{{ item.price }}" class="item-price"></td>
+                            <td><input type="text" value="{{ item.total }}" class="item-total" readonly></td>
+                            <td><button type="button" class="btn btn-danger remove-item-row">حذف</button></td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr class="repair-item-row">
+                        <td>
+                            <input type="hidden" name="item_id[]" value="">
+                            <select name="item_type[]" class="item-type">
+                                <option value="قطع غيار">قطع غيار</option>
+                                <option value="زيوت">زيوت</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select name="item_product[]" class="item-product">
+                                <option value="">بدون منتج</option>
+                                {% for product in products %}
+                                    <option value="{{ product.id }}" data-type="{{ product.product_type }}" data-wholesale="{{ product.wholesale_price }}" data-retail="{{ product.retail_price }}" data-description="{{ product.name }}">
+                                        {{ product.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select name="item_price_type[]" class="item-price-type">
+                                <option value="">عادي</option>
+                                <option value="wholesale">جملة</option>
+                                <option value="retail">قطاعي</option>
+                            </select>
+                        </td>
+                        <td><input type="text" name="item_description[]" class="item-description"></td>
+                        <td><input type="number" min="1" name="item_quantity[]" value="1" class="item-quantity"></td>
+                        <td><input type="number" min="0" step="0.01" name="item_price[]" value="0" class="item-price"></td>
+                        <td><input type="text" value="0" class="item-total" readonly></td>
+                        <td><button type="button" class="btn btn-danger remove-item-row">حذف</button></td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <div class="summary-row">
+        <span>الإجمالي الكلي</span>
+        <strong id="grand-total">0.00</strong>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+{% url 'add_worker_salary' worker.pk as salary_url %}
+{% include 'includes/page_header.html' with title=worker.name subtitle='تفاصيل العامل وسجل الرواتب' action_url=salary_url action_label='إضافة راتب' %}
+<div class="detail-grid">
+    <div class="section-card">
+        <p>الهاتف: {{ worker.phone|default:'-' }}</p>
+        <p>العنوان: {{ worker.address|default:'-' }}</p>
+        <p>الراتب الأساسي: {{ worker.salary|floatformat:2 }} د.ل</p>
+        <h2>الإصلاحات</h2>
+        <ul class="plain-list">
+            {% for repair in worker.repairs.all %}
+                <li><a href="{% url 'repair_details' repair.pk %}">إصلاح #{{ repair.pk }}</a></li>
+            {% empty %}
+                <li>لا توجد إصلاحات مرتبطة.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="section-card">
+        <h2>سجلات الرواتب</h2>
+        <table class="data-table">
+            <thead><tr><th>المبلغ</th><th>التاريخ</th><th>الحالة</th><th>حذف</th></tr></thead>
+            <tbody>
+                {% for salary in worker.salaries.all %}
+                    <tr>
+                        <td>{{ salary.amount|floatformat:2 }}</td>
+                        <td>{{ salary.date }}</td>
+                        <td>{{ salary.status }}</td>
+                        <td><a class="btn btn-danger" href="{% url 'delete_worker_salary' salary.pk %}">حذف</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4">لا توجد سجلات.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

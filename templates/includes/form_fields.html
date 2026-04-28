@@ -1,0 +1,10 @@
+{% for field in form %}
+    {% if field.name != 'worker' or field.is_hidden == False %}
+        <div class="field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+            {{ field.errors }}
+        </div>
+    {% endif %}
+{% endfor %}

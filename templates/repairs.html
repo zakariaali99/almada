@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+{% url 'add_repair' as add_url %}
+{% include 'includes/page_header.html' with title='الإصلاحات' subtitle='إدارة أوامر الصيانة والفواتير' action_url=add_url action_label='إضافة إصلاح' %}
+<div class="section-card">
+    <form method="get" class="filters-grid">
+        <select name="status">
+            <option value="">كل الحالات</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="customer">
+            <option value="">كل العملاء</option>
+            {% for customer in customers %}
+                <option value="{{ customer.pk }}" {% if request.GET.customer == customer.pk|stringformat:'s' %}selected{% endif %}>{{ customer.name }}</option>
+            {% endfor %}
+        </select>
+        <select name="worker">
+            <option value="">كل العمال</option>
+            {% for worker in workers %}
+                <option value="{{ worker.pk }}" {% if request.GET.worker == worker.pk|stringformat:'s' %}selected{% endif %}>{{ worker.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="date" name="start_date" value="{{ request.GET.start_date }}">
+        <input type="date" name="end_date" value="{{ request.GET.end_date }}">
+        <button type="submit" class="btn btn-secondary">تصفية</button>
+    </form>
+    <table class="data-table">
+        <thead><tr><th>التاريخ</th><th>السيارة</th><th>العميل</th><th>العامل</th><th>الحالة</th><th>التكلفة</th><th>الإجراءات</th></tr></thead>
+        <tbody>
+            {% for repair in repairs %}
+                <tr>
+                    <td>{{ repair.date }}</td>
+                    <td>{{ repair.car }}</td>
+                    <td>{{ repair.car.customer.name }}</td>
+                    <td>{{ repair.worker|default:'-' }}</td>
+                    <td>{{ repair.get_status_display }}</td>
+                    <td>{{ repair.total_cost|floatformat:2 }}</td>
+                    <td class="actions">
+                        <a class="btn btn-secondary" href="{% url 'repair_details' repair.pk %}">عرض</a>
+                        <a class="btn btn-warning" href="{% url 'edit_repair' repair.pk %}">تعديل</a>
+                        <a class="btn btn-danger" href="{% url 'delete_repair' repair.pk %}">حذف</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7">لا توجد إصلاحات.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

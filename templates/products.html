@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+{% url 'add_product' as add_url %}
+{% include 'includes/page_header.html' with title='المنتجات' subtitle='إدارة المخزون والأسعار' action_url=add_url action_label='إضافة منتج' %}
+<div class="section-card">
+    <table class="data-table">
+        <thead><tr><th>الاسم</th><th>النوع</th><th>سعر الشراء</th><th>جملة</th><th>قطاعي</th><th>الكمية</th><th>الإجراءات</th></tr></thead>
+        <tbody>
+            {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td><td>{{ product.product_type }}</td><td>{{ product.price_bought|floatformat:2 }}</td><td>{{ product.wholesale_price|floatformat:2 }}</td><td>{{ product.retail_price|floatformat:2 }}</td><td>{{ product.quantity }}</td>
+                    <td class="actions">
+                        <a class="btn btn-secondary" href="{% url 'product_details' product.pk %}">عرض</a>
+                        <a class="btn btn-warning" href="{% url 'edit_product' product.pk %}">تعديل</a>
+                        <a class="btn btn-danger" href="{% url 'delete_product' product.pk %}">حذف</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7">لا توجد منتجات.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

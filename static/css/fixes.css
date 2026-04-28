@@ -1,0 +1,45 @@
+/* ==========================================================================
+   FIXES — Component-level overrides & missing styles
+   ========================================================================== */
+
+/* Action column in tables */
+.actions .btn { min-width: 60px; }
+.section-card .actions { margin-bottom: 1rem; }
+
+/* Form labels */
+.field label { font-weight: 600; font-size: 0.875rem; color: var(--text-secondary); }
+.field small { color: var(--text-muted); font-size: 0.75rem; }
+
+/* Compact stat grid (used in earnings_details) */
+.stats-grid.compact { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+
+/* Detail pages: info rows */
+.section-card p {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-light, #f1f5f9);
+    font-size: 0.875rem;
+    color: var(--text-secondary, #475569);
+    margin: 0;
+}
+.section-card p:last-child { border-bottom: 0; }
+.section-card p a { color: var(--primary); font-weight: 600; }
+.section-card p a:hover { text-decoration: underline; }
+
+/* Table responsive wrapper */
+.table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Badge-like status styling (optional) */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Override Bootstrap RTL conflicts */
+.data-table th, .data-table td { text-align: right; }
+
+/* Ensure sidebar doesn't show on login page */
+.login-body .sidebar,
+.login-body .mobile-header { display: none !important; }

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'includes/page_header.html' with title=car.make subtitle='تفاصيل السيارة وسجل الإصلاحات' %}
+<div class="detail-grid">
+    <div class="section-card">
+        <p>العميل: <a href="{% url 'customer_details' car.customer.pk %}">{{ car.customer.name }}</a></p>
+        <p>الموديل: {{ car.model|default:'-' }}</p>
+        <p>اللوحة: {{ car.license_plate|default:'-' }}</p>
+        <p>الهيكل: {{ car.vin|default:'-' }}</p>
+        <p>اللون: {{ car.color|default:'-' }}</p>
+    </div>
+    <div class="section-card">
+        <h2>الإصلاحات</h2>
+        <ul class="plain-list">
+            {% for repair in car.repairs.all %}
+                <li><a href="{% url 'repair_details' repair.pk %}">إصلاح #{{ repair.pk }} - {{ repair.get_status_display }}</a></li>
+            {% empty %}
+                <li>لا توجد إصلاحات مسجلة.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

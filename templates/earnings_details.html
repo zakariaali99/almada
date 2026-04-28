@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'includes/page_header.html' with title='تفاصيل الأرباح' subtitle=category %}
+
+<section class="stats-grid compact">
+    <article class="stat-card">
+        <div class="stat-icon icon-green"><span class="material-icons-round">arrow_upward</span></div>
+        <div class="stat-info">
+            <span class="stat-label">الإيراد</span>
+            <span class="stat-value">{{ details.revenue|floatformat:2 }}</span>
+        </div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-icon icon-red"><span class="material-icons-round">arrow_downward</span></div>
+        <div class="stat-info">
+            <span class="stat-label">التكلفة</span>
+            <span class="stat-value">{{ details.cost|floatformat:2 }}</span>
+        </div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-icon"><span class="material-icons-round">trending_up</span></div>
+        <div class="stat-info">
+            <span class="stat-label">الربح</span>
+            <span class="stat-value">{{ details.profit|floatformat:2 }}</span>
+        </div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-icon icon-amber"><span class="material-icons-round">inventory_2</span></div>
+        <div class="stat-info">
+            <span class="stat-label">العناصر</span>
+            <span class="stat-value">{{ details.items_count }}</span>
+        </div>
+    </article>
+</section>
+
+<div class="section-card">
+    <table class="data-table">
+        <thead><tr><th>الإصلاح</th><th>العميل</th><th>السيارة</th><th>الوصف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+        <tbody>
+            {% for item in details.items %}
+                <tr>
+                    <td><a href="{% url 'repair_details' item.repair.pk %}">#{{ item.repair.pk }}</a></td>
+                    <td>{{ item.repair.car.customer.name }}</td>
+                    <td>{{ item.repair.car }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.price|floatformat:2 }}</td>
+                    <td>{{ item.total|floatformat:2 }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7">لا توجد بيانات في هذه الفترة.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if category == 'services' %}
+<div class="section-card">
+    <div class="section-card-header"><h2>رواتب العمال المحسوبة ضمن تكلفة الخدمات</h2></div>
+    <ul class="plain-list">
+        {% for salary in salary_records %}
+            <li>{{ salary.worker.name }} — {{ salary.amount|floatformat:2 }} — {{ salary.date }}</li>
+        {% empty %}
+            <li>لا توجد سجلات رواتب مدفوعة.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{% load static %}
+{% extends 'base.html' %}
+{% block content %}
+{% include 'includes/page_header.html' with title=page_title subtitle=page_subtitle %}
+<form method="post" class="stack-form section-card">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% include 'includes/form_fields.html' with form=form %}
+    {% include 'includes/repair_items_table.html' with items=items products=products %}
+    <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+</form>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/repair-form.js' %}"></script>
+{% endblock %}

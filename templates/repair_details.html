@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'includes/page_header.html' with title='تفاصيل الإصلاح' subtitle=invoice_number %}
+<div class="detail-grid">
+    <div class="section-card">
+        <p>السيارة: <a href="{% url 'car_details' repair.car.pk %}">{{ repair.car }}</a></p>
+        <p>العميل: <a href="{% url 'customer_details' repair.car.customer.pk %}">{{ repair.car.customer.name }}</a></p>
+        <p>العامل: {{ repair.worker|default:'-' }}</p>
+        <p>الحالة: {{ repair.get_status_display }}</p>
+        <p>التاريخ: {{ repair.date }}</p>
+        <p>الوصف: {{ repair.description }}</p>
+        <p>ملاحظات: {{ repair.notes|default:'-' }}</p>
+    </div>
+    <div class="section-card">
+        <div class="actions">
+            <a class="btn btn-warning" href="{% url 'edit_repair' repair.pk %}">تعديل</a>
+            <a class="btn btn-primary" href="{% url 'view_invoice' repair.pk %}">عرض الفاتورة</a>
+            <a class="btn btn-secondary" href="{% url 'add_repair_item' repair.pk %}">إضافة عنصر</a>
+        </div>
+        <table class="data-table">
+            <thead><tr><th>#</th><th>النوع</th><th>الوصف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>الإجراءات</th></tr></thead>
+            <tbody>
+                {% for item in repair.items.all %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.item_type }}</td>
+                        <td>{{ item.description }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price|floatformat:2 }}</td>
+                        <td>{{ item.total|floatformat:2 }}</td>
+                        <td class="actions">
+                            <a class="btn btn-warning" href="{% url 'edit_repair_item' repair.pk item.pk %}">تعديل</a>
+                            <a class="btn btn-danger" href="{% url 'delete_repair_item' item.pk %}">حذف</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7">لا توجد عناصر داخل الإصلاح.</td></tr>
+                {% endfor %}
+            </tbody>
+            <tfoot><tr><th colspan="5">الإجمالي</th><th colspan="2">{{ repair.total_cost|floatformat:2 }} د.ل</th></tr></tfoot>
+        </table>
+    </div>
+</div>
+{% endblock %}

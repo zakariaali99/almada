@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'includes/page_header.html' with title=product.name subtitle='تفاصيل المنتج والأرباح' %}
+<div class="detail-grid">
+    <div class="section-card">
+        <p>النوع: {{ product.product_type }}</p>
+        <p>سعر الشراء: {{ product.price_bought|floatformat:2 }}</p>
+        <p>سعر الجملة: {{ product.wholesale_price|floatformat:2 }}</p>
+        <p>سعر القطاعي: {{ product.retail_price|floatformat:2 }}</p>
+        <p>الكمية الحالية: {{ product.quantity }}</p>
+        <p>إجمالي الربح: {{ product.total_profit|floatformat:2 }}</p>
+    </div>
+    <div class="section-card">
+        <h2>سجل الاستخدام</h2>
+        <ul class="plain-list">
+            {% for item in product.repair_items.all %}
+                <li>إصلاح #{{ item.repair.pk }} - {{ item.repair.car.customer.name }} - {{ item.quantity }} × {{ item.price|floatformat:2 }}</li>
+            {% empty %}
+                <li>لم يتم استخدام المنتج بعد.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

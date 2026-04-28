@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="invoice-sheet">
+    <div class="invoice-head">
+        <div>
+            <h1>فاتورة</h1>
+            <p>{{ invoice_number }}</p>
+        </div>
+        <button class="btn btn-secondary no-print" onclick="window.print()">طباعة</button>
+    </div>
+    <div class="detail-grid">
+        <div class="section-card">
+            <p>العميل: {{ repair.car.customer.name }}</p>
+            <p>السيارة: {{ repair.car }}</p>
+            <p>العامل: {{ repair.worker|default:'-' }}</p>
+        </div>
+        <div class="section-card">
+            <p>تاريخ الإصلاح: {{ repair.date }}</p>
+            <p>الحالة: {{ repair.get_status_display }}</p>
+            <p>الوصف: {{ repair.description }}</p>
+        </div>
+    </div>
+    <table class="data-table">
+        <thead><tr><th>الوصف</th><th>النوع</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+        <tbody>
+            {% for item in repair.items.all %}
+                <tr>
+                    <td>{{ item.description }}</td><td>{{ item.item_type }}</td><td>{{ item.quantity }}</td><td>{{ item.price|floatformat:2 }}</td><td>{{ item.total|floatformat:2 }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot><tr><th colspan="4">المجموع</th><th>{{ repair.total_cost|floatformat:2 }} د.ل</th></tr></tfoot>
+    </table>
+</section>
+{% endblock %}

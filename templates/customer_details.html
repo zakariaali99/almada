@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'includes/page_header.html' with title=customer.name subtitle='تفاصيل العميل' %}
+<div class="detail-grid">
+    <div class="section-card">
+        <h2>البيانات الأساسية</h2>
+        <p>الهاتف: {{ customer.phone|default:'-' }}</p>
+        <p>النوع: {{ customer.customer_type }}</p>
+        <p>العنوان: {{ customer.address|default:'-' }}</p>
+    </div>
+    <div class="section-card">
+        <h2>السيارات</h2>
+        <ul class="plain-list">
+            {% for car in customer.cars.all %}
+                <li><a href="{% url 'car_details' car.pk %}">{{ car }}</a></li>
+            {% empty %}
+                <li>لا توجد سيارات مرتبطة.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

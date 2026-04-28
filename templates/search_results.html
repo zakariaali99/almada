@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}نتائج البحث{% endblock %}
+{% block content %}
+{% include 'includes/page_header.html' with title='نتائج البحث' subtitle='البحث عن: ' query %}
+
+{% if not results.customers and not results.cars and not results.repairs %}
+    <div class="section-card">
+        <p>لا توجد نتائج مطابقة لبحثك.</p>
+    </div>
+{% else %}
+    {% if results.customers %}
+        <div class="section-card">
+            <div class="section-card-header"><h2>العملاء</h2></div>
+            <table class="data-table">
+                <thead><tr><th>الاسم</th><th>الهاتف</th><th>الإجراءات</th></tr></thead>
+                <tbody>
+                    {% for customer in results.customers %}
+                        <tr>
+                            <td>{{ customer.name }}</td>
+                            <td>{{ customer.phone|default:'-' }}</td>
+                            <td><a class="btn btn-secondary" href="{% url 'customer_details' customer.pk %}">عرض</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if results.cars %}
+        <div class="section-card">
+            <div class="section-card-header"><h2>السيارات</h2></div>
+            <table class="data-table">
+                <thead><tr><th>الشركة/الموديل</th><th>اللوحة</th><th>العميل</th><th>الإجراءات</th></tr></thead>
+                <tbody>
+                    {% for car in results.cars %}
+                        <tr>
+                            <td>{{ car.make }} {{ car.model }}</td>
+                            <td>{{ car.license_plate|default:'-' }}</td>
+                            <td>{{ car.customer.name }}</td>
+                            <td><a class="btn btn-secondary" href="{% url 'car_details' car.pk %}">عرض</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if results.repairs %}
+        <div class="section-card">
+            <div class="section-card-header"><h2>الإصلاحات</h2></div>
+            <table class="data-table">
+                <thead><tr><th>رقم الإصلاح</th><th>الوصف</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
+                <tbody>
+                    {% for repair in results.repairs %}
+                        <tr>
+                            <td>#{{ repair.pk }}</td>
+                            <td>{{ repair.description|truncatechars:50 }}</td>
+                            <td>{{ repair.get_status_display }}</td>
+                            <td><a class="btn btn-secondary" href="{% url 'repair_details' repair.pk %}">عرض</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endif %}
+{% endblock %}
