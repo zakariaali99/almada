@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}نظام الخوارزمي{% endblock %}</title>
-    <!-- Fonts & Icons (CDN) -->
+    <!-- Localized Dependencies -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -39,10 +39,13 @@
                 {% endfor %}
             </nav>
             <div class="sidebar-footer">
-                <a href="{% url 'logout' %}" class="nav-item logout-link">
-                    <span class="material-icons-round">logout</span>
-                    <span class="nav-label">تسجيل الخروج</span>
-                </a>
+                <form action="{% url 'logout' %}" method="post" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-item logout-link">
+                        <span class="material-icons-round">logout</span>
+                        <span class="nav-label">تسجيل الخروج</span>
+                    </button>
+                </form>
             </div>
         </aside>
 
@@ -68,11 +71,34 @@
         </main>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'libs/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'libs/sweetalert2@11.min.js' %}"></script>
     <script src="{% static 'js/script.js' %}"></script>
     <script src="{% static 'js/arabic-date.js' %}"></script>
     <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Delete confirmation for all forms with delete-form class
+        document.querySelectorAll(".delete-form").forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                var message = form.getAttribute("data-confirm") || "هل أنت متأكد من الحذف؟";
+                e.preventDefault();
+                Swal.fire({
+                    title: "هل أنت متأكد؟",
+                    text: message,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "نعم، احذفه!",
+                    cancelButtonText: "إلغاء"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+        
         // Mobile menu toggle
         var toggle = document.getElementById('menuToggle');
         var sidebar = document.getElementById('sidebar');
@@ -87,6 +113,7 @@
                 }
             });
         }
+    });
     </script>
     {% block scripts %}{% endblock %}
 </body>

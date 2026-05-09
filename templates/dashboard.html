@@ -32,6 +32,34 @@
             <span class="stat-value">{{ total_revenue|floatformat:2 }} <small>د.ل</small></span>
         </div>
     </article>
+    <article class="stat-card">
+        <div class="stat-icon icon-red"><span class="material-icons-round">receipt</span></div>
+        <div class="stat-info">
+            <span class="stat-label">مصاريف اليوم</span>
+            <span class="stat-value">{{ today_expenses|floatformat:2 }} <small>د.ل</small></span>
+        </div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-icon icon-orange"><span class="material-icons-round">inventory_2</span></div>
+        <div class="stat-info">
+            <span class="stat-label">منتجات منخفضة المخزون</span>
+            <span class="stat-value">{{ low_stock_count }}</span>
+        </div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-icon icon-blue"><span class="material-icons-round">account_balance_wallet</span></div>
+        <div class="stat-info">
+            <span class="stat-label">رواتب معلقة</span>
+            <span class="stat-value">{{ pending_salaries_count }}</span>
+        </div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-icon icon-purple"><span class="material-icons-round">backup</span></div>
+        <div class="stat-info">
+            <span class="stat-label">نسخة احتياطية</span>
+            <a href="{% url 'download_database' %}" class="stat-value">تنزيل قاعدة البيانات</a>
+        </div>
+    </article>
 </section>
 
 <section class="two-col">
@@ -41,15 +69,15 @@
             <thead><tr><th>التاريخ</th><th>العميل</th><th>السيارة</th><th>الحالة</th><th>التكلفة</th></tr></thead>
             <tbody>
                 {% for repair in recent_repairs %}
-                    <tr>
-                        <td>{{ repair.date }}</td>
-                        <td>{{ repair.car.customer.name }}</td>
-                        <td>{{ repair.car }}</td>
-                        <td>{{ repair.get_status_display }}</td>
-                        <td>{{ repair.total_cost|floatformat:2 }}</td>
-                    </tr>
+                <tr>
+                    <td>{{ repair.date }}</td>
+                    <td>{{ repair.car.customer.name }}</td>
+                    <td>{{ repair.car }}</td>
+                    <td>{{ repair.get_status_display }}</td>
+                    <td>{{ repair.total_cost|floatformat:2 }}</td>
+                </tr>
                 {% empty %}
-                    <tr><td colspan="5">لا توجد إصلاحات مكتملة اليوم.</td></tr>
+                <tr><td colspan="5">لا توجد إصلاحات مكتملة اليوم.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -60,13 +88,13 @@
             <thead><tr><th>الاسم</th><th>الهاتف</th><th>عدد السيارات</th></tr></thead>
             <tbody>
                 {% for customer in recent_customers %}
-                    <tr>
-                        <td>{{ customer.name }}</td>
-                        <td>{{ customer.phone|default:'-' }}</td>
-                        <td>{{ customer.cars.count }}</td>
-                    </tr>
+                <tr>
+                    <td>{{ customer.name }}</td>
+                    <td>{{ customer.phone|default:'-' }}</td>
+                    <td>{{ customer.cars.count }}</td>
+                </tr>
                 {% empty %}
-                    <tr><td colspan="3">لا يوجد عملاء بعد.</td></tr>
+                <tr><td colspan="3">لا يوجد عملاء بعد.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

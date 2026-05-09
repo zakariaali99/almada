@@ -28,10 +28,11 @@
                         <td>{{ item.quantity }}</td>
                         <td>{{ item.price|floatformat:2 }}</td>
                         <td>{{ item.total|floatformat:2 }}</td>
-                        <td class="actions">
-                            <a class="btn btn-warning" href="{% url 'edit_repair_item' repair.pk item.pk %}">تعديل</a>
-                            <a class="btn btn-danger" href="{% url 'delete_repair_item' item.pk %}">حذف</a>
-                        </td>
+<td class="actions">
+<a class="btn btn-warning" href="{% url 'edit_repair_item' repair.pk item.pk %}">تعديل</a>
+{% url 'delete_repair_item' item.pk as delete_url %}
+{% include 'includes/delete_form.html' with action_url=delete_url %}
+</td>
                     </tr>
                 {% empty %}
                     <tr><td colspan="7">لا توجد عناصر داخل الإصلاح.</td></tr>

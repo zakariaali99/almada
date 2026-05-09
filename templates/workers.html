@@ -6,13 +6,14 @@
     <table class="data-table">
         <thead><tr><th>الاسم</th><th>الهاتف</th><th>العنوان</th><th>الراتب</th><th>الإجراءات</th></tr></thead>
         <tbody>
-            {% for worker in workers %}
+            {% for worker in page_obj %}
                 <tr>
                     <td>{{ worker.name }}</td><td>{{ worker.phone|default:'-' }}</td><td>{{ worker.address|default:'-' }}</td><td>{{ worker.salary|floatformat:2 }}</td>
                     <td class="actions">
                         <a class="btn btn-secondary" href="{% url 'worker_details' worker.pk %}">عرض</a>
                         <a class="btn btn-warning" href="{% url 'edit_worker' worker.pk %}">تعديل</a>
-                        <a class="btn btn-danger" href="{% url 'delete_worker' worker.pk %}">حذف</a>
+                        {% url 'delete_worker' worker.pk as delete_url %}
+                        {% include 'includes/delete_form.html' with action_url=delete_url %}
                     </td>
                 </tr>
             {% empty %}
@@ -21,4 +22,23 @@
         </tbody>
     </table>
 </div>
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; أول</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">سابق</a>
+        {% endif %}
+
+        <span class="current">
+            صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">التالي</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">آخر &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+{% endif %}
 {% endblock %}

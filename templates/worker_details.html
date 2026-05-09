@@ -26,7 +26,10 @@
                         <td>{{ salary.amount|floatformat:2 }}</td>
                         <td>{{ salary.date }}</td>
                         <td>{{ salary.status }}</td>
-                        <td><a class="btn btn-danger" href="{% url 'delete_worker_salary' salary.pk %}">حذف</a></td>
+                        <td>
+{% url 'delete_worker_salary' salary.pk as delete_url %}
+{% include 'includes/delete_form.html' with action_url=delete_url %}
+</td>
                     </tr>
                 {% empty %}
                     <tr><td colspan="4">لا توجد سجلات.</td></tr>

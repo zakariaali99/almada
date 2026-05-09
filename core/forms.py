@@ -123,6 +123,10 @@ class ProductForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(attrs={"placeholder": "اسم القطعة أو الزيت..."}),
             "description": ArabicTextarea(attrs={"placeholder": "تفاصيل إضافية عن المنتج..."}),
+            "price": forms.NumberInput(attrs={"step": "0.01", "placeholder": "0.00"}),
+            "price_bought": forms.NumberInput(attrs={"step": "0.01", "placeholder": "0.00"}),
+            "wholesale_price": forms.NumberInput(attrs={"step": "0.01", "placeholder": "0.00"}),
+            "retail_price": forms.NumberInput(attrs={"step": "0.01", "placeholder": "0.00"}),
         }
 
 
@@ -140,6 +144,7 @@ class WorkerForm(forms.ModelForm):
             "name": forms.TextInput(attrs={"placeholder": "اسم العامل بالكامل..."}),
             "phone": forms.TextInput(attrs={"placeholder": "رقم الهاتف..."}),
             "address": ArabicTextarea(attrs={"placeholder": "عنوان السكن..."}),
+            "salary": forms.NumberInput(attrs={"step": "0.01", "placeholder": "0.00"}),
         }
 
 
@@ -159,6 +164,7 @@ class WorkerSalaryForm(forms.ModelForm):
         widgets = {
             "date": ArabicDateInput(),
             "notes": ArabicTextarea(attrs={"placeholder": "ملاحظات عن صرف الراتب أو المكافأة..."}),
+            "amount": forms.NumberInput(attrs={"step": "0.01", "placeholder": "0.00"}),
         }
 
 

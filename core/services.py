@@ -1,6 +1,7 @@
 import shutil
 from collections import defaultdict
 from datetime import timedelta
+from decimal import Decimal
 from pathlib import Path
 
 from django.conf import settings
@@ -17,7 +18,11 @@ def validate_item_price(product, submitted_price, price_type):
     if not product or not price_type:
         return
     expected = product.wholesale_price if price_type == "wholesale" else product.retail_price
-    if round(float(submitted_price), 2) != round(float(expected), 2):
+    try:
+        submitted = Decimal(submitted_price)
+    except Exception:
+        raise ValidationError("سعر غير صالح")
+    if submitted != expected:
         raise ValidationError("سعر المنتج لا يطابق نوع السعر المختار.")
 
 
@@ -86,7 +91,7 @@ def upsert_repair_items_from_post(repair, post_data):
         if not description.strip():
             continue
         quantity = int(quantities[index] or 1)
-        price = float(prices[index] or 0)
+        price = Decimal(prices[index] or "0.00")
         product = Product.objects.filter(pk=products[index]).first() if index < len(products) and products[index] else None
         item_type = item_types[index] if index < len(item_types) and item_types[index] else "قطع غيار"
         price_type = price_types[index] if index < len(price_types) and price_types[index] else None
@@ -182,7 +187,10 @@ def earnings_snapshot(filter_type="all"):
         if key == "services":
             cost = salary_qs.aggregate(total=Sum("amount"))["total"] or 0
         else:
-            cost = sum((item.product.price_bought if item.product else 0) * item.quantity for item in qs)
+            cost = sum(
+                (item.product.price_bought if item.product else Decimal("0.00")) * item.quantity
+                for item in qs
+            )
         profit = revenue - cost
         earnings[key] = {
             "revenue": revenue,
@@ -212,18 +220,40 @@ def get_dashboard_context():
         .order_by("-repair_count", "make")[:5]
     )
     completed_today = repairs.filter(status=Repair.STATUS_COMPLETED, date_completed__date=today)
+    
+    # Calculate additional metrics
+    pending_repairs = repairs.filter(status=Repair.STATUS_PENDING).count()
+    in_progress_repairs = repairs.filter(status=Repair.STATUS_IN_PROGRESS).count()
+    completed_repairs = repairs.filter(status=Repair.STATUS_COMPLETED).count()
+    cancelled_repairs = repairs.filter(status=Repair.STATUS_CANCELLED).count()
+    
+    # Calculate today's expenses (worker salaries paid today)
+    today_expenses = WorkerSalary.objects.filter(
+        status="مدفوع", 
+        payment_date__date=today
+    ).aggregate(total=Sum("amount"))["total"] or 0
+    
+    # Calculate low stock products
+    low_stock_products = Product.objects.filter(quantity__lt=5).count()
+    
+    # Calculate pending worker salaries
+    pending_salaries = WorkerSalary.objects.filter(status="محفوظ").count()
+    
     return {
         "customer_count": Customer.objects.count(),
         "car_count": Car.objects.count(),
-        "pending_count": repairs.filter(status=Repair.STATUS_PENDING).count(),
-        "in_progress_count": repairs.filter(status=Repair.STATUS_IN_PROGRESS).count(),
-        "completed_count": repairs.filter(status=Repair.STATUS_COMPLETED).count(),
-        "cancelled_count": repairs.filter(status=Repair.STATUS_CANCELLED).count(),
+        "pending_count": pending_repairs,
+        "in_progress_count": in_progress_repairs,
+        "completed_count": completed_repairs,
+        "cancelled_count": cancelled_repairs,
         "product_count": Product.objects.count(),
         "worker_count": Worker.objects.count(),
         "recent_repairs": completed_today[:5],
         "recent_customers": Customer.objects.prefetch_related("cars").all()[:5],
         "total_revenue": completed_today.aggregate(total=Sum("total_cost"))["total"] or 0,
+        "today_expenses": today_expenses,
+        "low_stock_count": low_stock_products,
+        "pending_salaries_count": pending_salaries,
         "top_cars": top_cars,
         "cancelled_repairs": repairs.filter(status=Repair.STATUS_CANCELLED)[:5],
         "now": timezone.now(),

@@ -4,12 +4,15 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import ProtectedError, Q
-from django.http import FileResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
+from .decorators import rate_limit
 from .forms import (
     CarForm,
     CustomerForm,
@@ -42,6 +45,7 @@ def index(request):
     return redirect("dashboard" if request.user.is_authenticated else "login")
 
 
+@rate_limit("login", max_attempts=5, window_seconds=300)
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
@@ -53,6 +57,7 @@ def login_view(request):
     return render(request, "login.html", {"form": form})
 
 
+@require_POST
 def logout_view(request):
     logout(request)
     messages.info(request, "تم تسجيل الخروج")
@@ -70,7 +75,13 @@ def customers(request):
     items = Customer.objects.all()
     if query:
         items = items.filter(Q(name__icontains=query) | Q(phone__icontains=query))
-    return render(request, "customers.html", {"customers": items, "query": query})
+    
+    # Pagination
+    paginator = Paginator(items, 25)  # Show 25 customers per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "customers.html", {"page_obj": page_obj, "query": query})
 
 
 @login_required
@@ -105,6 +116,7 @@ def edit_customer(request, pk):
 
 
 @login_required
+@require_POST
 def delete_customer(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
     try:
@@ -126,7 +138,13 @@ def customer_details(request, pk):
 @login_required
 def cars(request):
     items = Car.objects.select_related("customer")
-    return render(request, "cars.html", {"cars": items})
+    
+    # Pagination
+    paginator = Paginator(items, 25)  # Show 25 cars per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "cars.html", {"page_obj": page_obj})
 
 
 @login_required
@@ -161,6 +179,7 @@ def edit_car(request, pk):
 
 
 @login_required
+@require_POST
 def delete_car(request, pk):
     car = get_object_or_404(Car, pk=pk)
     try:
@@ -192,11 +211,17 @@ def repairs(request):
         items = items.filter(date__gte=request.GET["start_date"])
     if request.GET.get("end_date"):
         items = items.filter(date__lte=request.GET["end_date"])
+    
+    # Pagination
+    paginator = Paginator(items, 25)  # Show 25 repairs per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
     return render(
         request,
         "repairs.html",
         {
-            "repairs": items,
+            "page_obj": page_obj,
             "customers": Customer.objects.all(),
             "workers": Worker.objects.all(),
             "status_choices": Repair.STATUS_CHOICES,
@@ -235,6 +260,7 @@ def edit_repair(request, pk):
 
 
 @login_required
+@require_POST
 def delete_repair(request, pk):
     repair = get_object_or_404(Repair, pk=pk)
     repair.delete()
@@ -302,6 +328,7 @@ def edit_repair_item(request, repair_pk, item_pk):
 
 
 @login_required
+@require_POST
 def delete_repair_item(request, pk):
     item = get_object_or_404(RepairItem.objects.select_related("repair", "product"), pk=pk)
     delete_repair_item_service(item)
@@ -351,7 +378,21 @@ def add_invoice(request):
 
 @login_required
 def products(request):
-    return render(request, "products.html", {"products": Product.objects.all()})
+    query = request.GET.get("q", "").strip()
+    items = Product.objects.all()
+    if query:
+        items = items.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query) |
+            Q(product_type__icontains=query)
+        )
+    
+    # Pagination
+    paginator = Paginator(items, 25)  # Show 25 products per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "products.html", {"page_obj": page_obj, "query": query})
 
 
 @login_required
@@ -386,6 +427,7 @@ def edit_product(request, pk):
 
 
 @login_required
+@require_POST
 def delete_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     try:
@@ -402,6 +444,7 @@ def product_details(request, pk):
     return render(request, "product_details.html", {"product": product})
 
 
+@login_required
 def get_products_by_type(request, product_type):
     products = Product.objects.filter(product_type=product_type)
     data = [
@@ -422,7 +465,14 @@ def get_products_by_type(request, product_type):
 
 @login_required
 def workers(request):
-    return render(request, "workers.html", {"workers": Worker.objects.all()})
+    items = Worker.objects.all()
+    
+    # Pagination
+    paginator = Paginator(items, 25)  # Show 25 workers per page
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "workers.html", {"page_obj": page_obj})
 
 
 @login_required
@@ -457,6 +507,7 @@ def edit_worker(request, pk):
 
 
 @login_required
+@require_POST
 def delete_worker(request, pk):
     worker = get_object_or_404(Worker, pk=pk)
     try:
@@ -484,6 +535,8 @@ def add_worker_salary(request, worker_pk):
         salary = form.save(commit=False)
         if salary.status == "مدفوع" and not salary.payment_date:
             salary.payment_date = timezone.now()
+        elif salary.status != "مدفوع":
+            salary.payment_date = None
         salary.save()
         messages.success(request, "تم حفظ سجل الراتب")
         return redirect("worker_details", pk=worker.pk)
@@ -491,12 +544,42 @@ def add_worker_salary(request, worker_pk):
 
 
 @login_required
+@require_POST
 def delete_worker_salary(request, pk):
     salary = get_object_or_404(WorkerSalary, pk=pk)
     worker_pk = salary.worker.pk
     salary.delete()
     messages.success(request, "تم حذف سجل الراتب")
     return redirect("worker_details", pk=worker_pk)
+
+
+@login_required
+def edit_worker_salary(request, pk):
+    salary = get_object_or_404(WorkerSalary, pk=pk)
+    worker = salary.worker
+    if request.method == "POST":
+        form = WorkerSalaryForm(request.POST, instance=salary)
+        if form.is_valid():
+            salary = form.save(commit=False)
+            if salary.status == "مدفوع" and not salary.payment_date:
+                salary.payment_date = timezone.now()
+            elif salary.status != "مدفوع":
+                salary.payment_date = None
+            salary.save()
+            messages.success(request, "تم تحديث سجل الراتب بنجاح")
+            return redirect("worker_details", pk=worker.pk)
+    else:
+        form = WorkerSalaryForm(instance=salary)
+        form.fields["worker"].queryset = Worker.objects.filter(pk=worker.pk)
+    
+    return render(request, "edit_worker_salary.html", {
+        "form": form,
+        "worker": worker,
+        "salary": salary,
+        "page_title": "تعديل راتب",
+        "page_subtitle": f"{worker.name} - {salary.amount}",
+        "submit_label": "حفظ التعديلات"
+    })
 
 
 @login_required

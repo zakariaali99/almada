@@ -4,25 +4,26 @@
 {% url 'add_customer' as add_url %}
 {% include 'includes/page_header.html' with title='العملاء' subtitle='إدارة بيانات العملاء' action_url=add_url action_label='إضافة عميل جديد' %}
 <div class="section-card">
-    <table class="data-table">
-        <thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>العنوان</th><th>الإجراءات</th></tr></thead>
-        <tbody>
-            {% for customer in customers %}
-                <tr>
-                    <td>{{ customer.name }}</td>
-                    <td>{{ customer.phone|default:'-' }}</td>
-                    <td>{{ customer.customer_type }}</td>
-                    <td>{{ customer.address|default:'-' }}</td>
-                    <td class="actions">
-                        <a class="btn btn-secondary" href="{% url 'customer_details' customer.pk %}">عرض</a>
-                        <a class="btn btn-warning" href="{% url 'edit_customer' customer.pk %}">تعديل</a>
-                        <a class="btn btn-danger" href="{% url 'delete_customer' customer.pk %}">حذف</a>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="5">لا يوجد عملاء.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<table class="data-table">
+<thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>العنوان</th><th>الإجراءات</th></tr></thead>
+<tbody>
+{% for customer in customers %}
+<tr>
+<td>{{ customer.name }}</td>
+<td>{{ customer.phone|default:'-' }}</td>
+<td>{{ customer.customer_type }}</td>
+<td>{{ customer.address|default:'-' }}</td>
+<td class="actions">
+<a class="btn btn-secondary" href="{% url 'customer_details' customer.pk %}">عرض</a>
+<a class="btn btn-warning" href="{% url 'edit_customer' customer.pk %}">تعديل</a>
+{% url 'delete_customer' customer.pk as delete_url %}
+{% include 'includes/delete_form.html' with action_url=delete_url %}
+</td>
+</tr>
+{% empty %}
+<tr><td colspan="5">لا يوجد عملاء.</td></tr>
+{% endfor %}
+</tbody>
+</table>
 </div>
 {% endblock %}

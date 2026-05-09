@@ -42,6 +42,7 @@ urlpatterns = [
     path("worker_details/<int:pk>/", views.worker_details, name="worker_details"),
     path("add_worker_salary/<int:worker_pk>/", views.add_worker_salary, name="add_worker_salary"),
     path("delete_worker_salary/<int:pk>/", views.delete_worker_salary, name="delete_worker_salary"),
+    path("edit_worker_salary/<int:pk>/", views.edit_worker_salary, name="edit_worker_salary"),
     path("earnings/", views.earnings, name="earnings"),
     path("earnings/details/<str:category>/", views.earnings_details, name="earnings_details"),
     path("download_database/", views.download_database, name="download_database"),
