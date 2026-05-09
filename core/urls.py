@@ -33,6 +33,7 @@ urlpatterns = [
     path("add_product/", views.add_product, name="add_product"),
     path("edit_product/<int:pk>/", views.edit_product, name="edit_product"),
     path("delete_product/<int:pk>/", views.delete_product, name="delete_product"),
+    path("reactivate_product/<int:pk>/", views.reactivate_product, name="reactivate_product"),
     path("product_details/<int:pk>/", views.product_details, name="product_details"),
     path("api/products/<str:product_type>/", views.get_products_by_type, name="api_products_by_type"),
     path("workers/", views.workers, name="workers"),

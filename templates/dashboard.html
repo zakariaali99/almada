@@ -4,100 +4,103 @@
 {% include 'includes/page_header.html' with title='لوحة التحكم' subtitle='ملخص سريع لحركة الورشة اليوم' %}
 
 <section class="stats-grid">
-    <article class="stat-card">
-        <div class="stat-icon"><span class="material-icons-round">people</span></div>
-        <div class="stat-info">
-            <span class="stat-label">العملاء</span>
-            <span class="stat-value">{{ customer_count }}</span>
-        </div>
-    </article>
-    <article class="stat-card">
-        <div class="stat-icon"><span class="material-icons-round">directions_car</span></div>
-        <div class="stat-info">
-            <span class="stat-label">السيارات</span>
-            <span class="stat-value">{{ car_count }}</span>
-        </div>
-    </article>
-    <article class="stat-card">
-        <div class="stat-icon icon-amber"><span class="material-icons-round">build</span></div>
-        <div class="stat-info">
-            <span class="stat-label">الإصلاحات الجارية</span>
-            <span class="stat-value">{{ in_progress_count }}</span>
-        </div>
-    </article>
-    <article class="stat-card">
-        <div class="stat-icon icon-green"><span class="material-icons-round">payments</span></div>
-        <div class="stat-info">
-            <span class="stat-label">إيراد اليوم</span>
-            <span class="stat-value">{{ total_revenue|floatformat:2 }} <small>د.ل</small></span>
-        </div>
-    </article>
-    <article class="stat-card">
-        <div class="stat-icon icon-red"><span class="material-icons-round">receipt</span></div>
-        <div class="stat-info">
-            <span class="stat-label">مصاريف اليوم</span>
-            <span class="stat-value">{{ today_expenses|floatformat:2 }} <small>د.ل</small></span>
-        </div>
-    </article>
-    <article class="stat-card">
-        <div class="stat-icon icon-orange"><span class="material-icons-round">inventory_2</span></div>
-        <div class="stat-info">
-            <span class="stat-label">منتجات منخفضة المخزون</span>
-            <span class="stat-value">{{ low_stock_count }}</span>
-        </div>
-    </article>
-    <article class="stat-card">
-        <div class="stat-icon icon-blue"><span class="material-icons-round">account_balance_wallet</span></div>
-        <div class="stat-info">
-            <span class="stat-label">رواتب معلقة</span>
-            <span class="stat-value">{{ pending_salaries_count }}</span>
-        </div>
-    </article>
-    <article class="stat-card">
-        <div class="stat-icon icon-purple"><span class="material-icons-round">backup</span></div>
-        <div class="stat-info">
-            <span class="stat-label">نسخة احتياطية</span>
-            <a href="{% url 'download_database' %}" class="stat-value">تنزيل قاعدة البيانات</a>
-        </div>
-    </article>
+<article class="stat-card">
+<div class="stat-icon"><span class="material-icons-round">people</span></div>
+<div class="stat-info">
+<span class="stat-label">العملاء</span>
+<span class="stat-value">{{ customer_count }}</span>
+</div>
+</article>
+<article class="stat-card">
+<div class="stat-icon"><span class="material-icons-round">directions_car</span></div>
+<div class="stat-info">
+<span class="stat-label">السيارات</span>
+<span class="stat-value">{{ car_count }}</span>
+</div>
+</article>
+<article class="stat-card">
+<div class="stat-icon icon-amber"><span class="material-icons-round">build</span></div>
+<div class="stat-info">
+<span class="stat-label">الإصلاحات الجارية</span>
+<span class="stat-value">{{ in_progress_count }}</span>
+</div>
+</article>
+<article class="stat-card">
+<div class="stat-icon icon-green"><span class="material-icons-round">payments</span></div>
+<div class="stat-info">
+<span class="stat-label">إيراد اليوم</span>
+<span class="stat-value">{{ total_revenue|floatformat:2 }} <small>د.ل</small></span>
+</div>
+</article>
+<article class="stat-card">
+<div class="stat-icon icon-red"><span class="material-icons-round">receipt</span></div>
+<div class="stat-info">
+<span class="stat-label">مصاريف اليوم</span>
+<span class="stat-value">{{ today_expenses|floatformat:2 }} <small>د.ل</small></span>
+</div>
+</article>
+<article class="stat-card">
+<div class="stat-icon icon-orange"><span class="material-icons-round">inventory_2</span></div>
+<div class="stat-info">
+<span class="stat-label">منتجات منخفضة المخزون</span>
+<span class="stat-value">{{ low_stock_count }}</span>
+{% if low_stock_count %}
+<a class="stat-link" href="{% url 'products' %}?q=">عرض المنتجات ←</a>
+{% endif %}
+</div>
+</article>
+<article class="stat-card">
+<div class="stat-icon icon-blue"><span class="material-icons-round">account_balance_wallet</span></div>
+<div class="stat-info">
+<span class="stat-label">رواتب معلقة</span>
+<span class="stat-value">{{ pending_salaries_count }}</span>
+</div>
+</article>
+<article class="stat-card">
+<div class="stat-icon icon-purple"><span class="material-icons-round">backup</span></div>
+<div class="stat-info">
+<span class="stat-label">نسخة احتياطية</span>
+<a href="{% url 'download_database' %}" class="stat-value" style="font-size: var(--font-size-base);">تنزيل قاعدة البيانات</a>
+</div>
+</article>
 </section>
 
 <section class="two-col">
-    <div class="section-card">
-        <div class="section-card-header"><h2>الإصلاحات المكتملة اليوم</h2></div>
-        <table class="data-table">
-            <thead><tr><th>التاريخ</th><th>العميل</th><th>السيارة</th><th>الحالة</th><th>التكلفة</th></tr></thead>
-            <tbody>
-                {% for repair in recent_repairs %}
-                <tr>
-                    <td>{{ repair.date }}</td>
-                    <td>{{ repair.car.customer.name }}</td>
-                    <td>{{ repair.car }}</td>
-                    <td>{{ repair.get_status_display }}</td>
-                    <td>{{ repair.total_cost|floatformat:2 }}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="5">لا توجد إصلاحات مكتملة اليوم.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div class="section-card">
-        <div class="section-card-header"><h2>أحدث العملاء</h2></div>
-        <table class="data-table">
-            <thead><tr><th>الاسم</th><th>الهاتف</th><th>عدد السيارات</th></tr></thead>
-            <tbody>
-                {% for customer in recent_customers %}
-                <tr>
-                    <td>{{ customer.name }}</td>
-                    <td>{{ customer.phone|default:'-' }}</td>
-                    <td>{{ customer.cars.count }}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="3">لا يوجد عملاء بعد.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="section-card">
+<div class="section-card-header"><h2>الإصلاحات المكتملة اليوم</h2></div>
+<table class="data-table">
+<thead><tr><th>التاريخ</th><th>العميل</th><th>السيارة</th><th>الحالة</th><th>التكلفة</th></tr></thead>
+<tbody>
+{% for repair in recent_repairs %}
+<tr>
+<td>{{ repair.date }}</td>
+<td>{{ repair.car.customer.name }}</td>
+<td>{{ repair.car }}</td>
+<td><span class="badge badge-success">{{ repair.get_status_display }}</span></td>
+<td>{{ repair.total_cost|floatformat:2 }} د.ل</td>
+</tr>
+{% empty %}
+<tr><td colspan="5">لا توجد إصلاحات مكتملة اليوم.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+<div class="section-card">
+<div class="section-card-header"><h2>أحدث العملاء</h2></div>
+<table class="data-table">
+<thead><tr><th>الاسم</th><th>الهاتف</th><th>عدد السيارات</th></tr></thead>
+<tbody>
+{% for customer in recent_customers %}
+<tr>
+<td>{{ customer.name }}</td>
+<td>{{ customer.phone|default:'-' }}</td>
+<td>{{ customer.cars.count }}</td>
+</tr>
+{% empty %}
+<tr><td colspan="3">لا يوجد عملاء بعد.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
 </section>
 {% endblock %}

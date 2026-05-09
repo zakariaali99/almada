@@ -1,35 +1,43 @@
 {% extends 'base.html' %}
+{% block title %}فاتورة {{ invoice_number }}{% endblock %}
 {% block content %}
 <section class="invoice-sheet">
-    <div class="invoice-head">
-        <div>
-            <h1>فاتورة</h1>
-            <p>{{ invoice_number }}</p>
-        </div>
-        <button class="btn btn-secondary no-print" onclick="window.print()">طباعة</button>
-    </div>
-    <div class="detail-grid">
-        <div class="section-card">
-            <p>العميل: {{ repair.car.customer.name }}</p>
-            <p>السيارة: {{ repair.car }}</p>
-            <p>العامل: {{ repair.worker|default:'-' }}</p>
-        </div>
-        <div class="section-card">
-            <p>تاريخ الإصلاح: {{ repair.date }}</p>
-            <p>الحالة: {{ repair.get_status_display }}</p>
-            <p>الوصف: {{ repair.description }}</p>
-        </div>
-    </div>
-    <table class="data-table">
-        <thead><tr><th>الوصف</th><th>النوع</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-        <tbody>
-            {% for item in repair.items.all %}
-                <tr>
-                    <td>{{ item.description }}</td><td>{{ item.item_type }}</td><td>{{ item.quantity }}</td><td>{{ item.price|floatformat:2 }}</td><td>{{ item.total|floatformat:2 }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-        <tfoot><tr><th colspan="4">المجموع</th><th>{{ repair.total_cost|floatformat:2 }} د.ل</th></tr></tfoot>
-    </table>
+<div class="invoice-head">
+<div>
+<h1>فاتورة</h1>
+<p>{{ invoice_number }}</p>
+</div>
+<div class="actions no-print">
+<button class="btn btn-primary" onclick="window.print()"><span class="material-icons-round">print</span> طباعة</button>
+<a class="btn btn-secondary" href="javascript:history.back()">رجوع</a>
+</div>
+</div>
+<div class="detail-grid">
+<div class="section-card">
+<p>العميل: <strong><a href="{% url 'customer_details' repair.car.customer.pk %}">{{ repair.car.customer.name }}</a></strong></p>
+<p>السيارة: <strong>{{ repair.car }}</strong></p>
+<p>العامل: <strong>{{ repair.worker|default:'-' }}</strong></p>
+</div>
+<div class="section-card">
+<p>تاريخ الإصلاح: <strong>{{ repair.date }}</strong></p>
+<p>الحالة: <span class="badge {% if repair.status == 'completed' %}badge-success{% elif repair.status == 'cancelled' %}badge-danger{% elif repair.status == 'in_progress' %}badge-warning{% else %}badge-info{% endif %}">{{ repair.get_status_display }}</span></p>
+<p>الوصف: <strong>{{ repair.description }}</strong></p>
+</div>
+</div>
+<table class="data-table">
+<thead><tr><th>الوصف</th><th>النوع</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+<tbody>
+{% for item in repair.items.all %}
+<tr>
+<td>{{ item.description }}</td>
+<td><span class="badge badge-primary">{{ item.item_type }}</span></td>
+<td>{{ item.quantity }}</td>
+<td>{{ item.price|floatformat:2 }} د.ل</td>
+<td>{{ item.total|floatformat:2 }} د.ل</td>
+</tr>
+{% endfor %}
+</tbody>
+<tfoot><tr><th colspan="4">المجموع</th><th>{{ repair.total_cost|floatformat:2 }} د.ل</th></tr></tfoot>
+</table>
 </section>
 {% endblock %}

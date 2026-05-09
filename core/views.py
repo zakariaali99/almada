@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 from django.conf import settings
 from django.contrib import messages
@@ -41,12 +42,12 @@ from .services import (
 )
 
 
-def index(request):
+def index(request) -> HttpResponse:
     return redirect("dashboard" if request.user.is_authenticated else "login")
 
 
 @rate_limit("login", max_attempts=5, window_seconds=300)
-def login_view(request):
+def login_view(request) -> HttpResponse:
     if request.user.is_authenticated:
         return redirect("dashboard")
     form = LoginForm(request, data=request.POST or None)
@@ -551,6 +552,16 @@ def delete_worker_salary(request, pk):
     salary.delete()
     messages.success(request, "تم حذف سجل الراتب")
     return redirect("worker_details", pk=worker_pk)
+
+
+@login_required
+@require_POST
+def reactivate_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    product.is_active = True
+    product.save(update_fields=["is_active"])
+    messages.success(request, "تم إعادة تفعيل المنتج")
+    return redirect("products")
 
 
 @login_required

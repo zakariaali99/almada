@@ -3,23 +3,38 @@
 {% url 'add_invoice' as add_url %}
 {% include 'includes/page_header.html' with title='الفواتير' subtitle='عرض وطباعة فواتير الإصلاح' action_url=add_url action_label='إضافة فاتورة' %}
 <div class="section-card">
-    <table class="data-table">
-        <thead><tr><th>الرقم</th><th>التاريخ</th><th>العميل</th><th>السيارة</th><th>الحالة</th><th>الإجمالي</th><th>الفاتورة</th></tr></thead>
-        <tbody>
-            {% for invoice in invoices %}
-                <tr>
-                    <td>{{ invoice.pk }}</td>
-                    <td>{{ invoice.date }}</td>
-                    <td>{{ invoice.car.customer.name }}</td>
-                    <td>{{ invoice.car }}</td>
-                    <td>{{ invoice.get_status_display }}</td>
-                    <td>{{ invoice.total_cost|floatformat:2 }}</td>
-                    <td><a class="btn btn-primary" href="{% url 'view_invoice' invoice.pk %}">عرض</a></td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="7">لا توجد فواتير.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<table class="data-table">
+<thead><tr><th>الرقم</th><th>التاريخ</th><th>العميل</th><th>السيارة</th><th>الحالة</th><th>الإجمالي</th><th>الفاتورة</th></tr></thead>
+<tbody>
+{% for invoice in page_obj %}
+<tr>
+<td>{{ invoice.pk }}</td>
+<td>{{ invoice.date }}</td>
+<td>{{ invoice.car.customer.name }}</td>
+<td>{{ invoice.car }}</td>
+<td><span class="badge {% if invoice.status == 'completed' %}badge-success{% elif invoice.status == 'cancelled' %}badge-danger{% elif invoice.status == 'in_progress' %}badge-warning{% else %}badge-info{% endif %}">{{ invoice.get_status_display }}</span></td>
+<td>{{ invoice.total_cost|floatformat:2 }} د.ل</td>
+<td><a class="btn btn-primary" href="{% url 'view_invoice' invoice.pk %}">عرض</a></td>
+</tr>
+{% empty %}
+<tr><td colspan="7">لا توجد فواتير.</td></tr>
+{% endfor %}
+</tbody>
+</table>
 </div>
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+<span class="step-links">
+{% if page_obj.has_previous %}
+<a href="?page=1{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; أول</a>
+<a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">سابق</a>
+{% endif %}
+<span class="current">صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}</span>
+{% if page_obj.has_next %}
+<a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">التالي</a>
+<a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">آخر &raquo;</a>
+{% endif %}
+</span>
+</div>
+{% endif %}
 {% endblock %}

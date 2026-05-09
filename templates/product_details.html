@@ -2,23 +2,28 @@
 {% block content %}
 {% include 'includes/page_header.html' with title=product.name subtitle='تفاصيل المنتج والأرباح' %}
 <div class="detail-grid">
-    <div class="section-card">
-        <p>النوع: {{ product.product_type }}</p>
-        <p>سعر الشراء: {{ product.price_bought|floatformat:2 }}</p>
-        <p>سعر الجملة: {{ product.wholesale_price|floatformat:2 }}</p>
-        <p>سعر القطاعي: {{ product.retail_price|floatformat:2 }}</p>
-        <p>الكمية الحالية: {{ product.quantity }}</p>
-        <p>إجمالي الربح: {{ product.total_profit|floatformat:2 }}</p>
-    </div>
-    <div class="section-card">
-        <h2>سجل الاستخدام</h2>
-        <ul class="plain-list">
-            {% for item in product.repair_items.all %}
-                <li>إصلاح #{{ item.repair.pk }} - {{ item.repair.car.customer.name }} - {{ item.quantity }} × {{ item.price|floatformat:2 }}</li>
-            {% empty %}
-                <li>لم يتم استخدام المنتج بعد.</li>
-            {% endfor %}
-        </ul>
-    </div>
+<div class="section-card">
+<p>النوع: <span class="badge {% if product.product_type == 'قطع غيار' %}badge-primary{% else %}badge-warning{% endif %}">{{ product.product_type }}</span></p>
+<p>سعر الشراء: <strong>{{ product.price_bought|floatformat:2 }}</strong> د.ل</p>
+<p>سعر الجملة: <strong>{{ product.wholesale_price|floatformat:2 }}</strong> د.ل</p>
+<p>سعر القطاعي: <strong>{{ product.retail_price|floatformat:2 }}</strong> د.ل</p>
+<p>الكمية الحالية: <strong>{% if product.quantity < 5 %}<span class="badge badge-danger">{{ product.quantity }}</span>{% else %}{{ product.quantity }}{% endif %}</strong></p>
+<p>إجمالي الربح: <strong class="text-primary">{{ product.total_profit|floatformat:2 }}</strong> د.ل</p>
+<div class="actions" style="margin-top:1rem">
+<a class="btn btn-warning" href="{% url 'edit_product' product.pk %}">تعديل</a>
+{% url 'delete_product' product.pk as delete_url %}
+{% include 'includes/delete_form.html' with action_url=delete_url %}
+</div>
+</div>
+<div class="section-card">
+<h2>سجل الاستخدام</h2>
+<ul class="plain-list">
+{% for item in product.repair_items.all %}
+<li><a href="{% url 'repair_details' item.repair.pk %}">إصلاح #{{ item.repair.pk }}</a> — {{ item.repair.car.customer.name }} — {{ item.quantity }} × {{ item.price|floatformat:2 }}</li>
+{% empty %}
+<li>لم يتم استخدام المنتج بعد.</li>
+{% endfor %}
+</ul>
+</div>
 </div>
 {% endblock %}

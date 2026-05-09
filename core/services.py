@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -14,7 +15,7 @@ from django.utils import timezone
 from .models import Car, Customer, Product, Repair, RepairItem, Worker, WorkerSalary
 
 
-def validate_item_price(product, submitted_price, price_type):
+def validate_item_price(product: Optional[Product], submitted_price: Any, price_type: Optional[str]) -> None:
     if not product or not price_type:
         return
     expected = product.wholesale_price if price_type == "wholesale" else product.retail_price
@@ -26,12 +27,12 @@ def validate_item_price(product, submitted_price, price_type):
         raise ValidationError("سعر المنتج لا يطابق نوع السعر المختار.")
 
 
-def recalculate_repair_total(repair):
+def recalculate_repair_total(repair: Repair) -> None:
     repair.total_cost = sum(item.total for item in repair.items.all())
     repair.save(update_fields=["total_cost"])
 
 
-def adjust_product_stock(product, delta):
+def adjust_product_stock(product: Product, delta: int) -> None:
     if not product:
         return
     # Use select_for_update to prevent race conditions
@@ -46,7 +47,15 @@ def adjust_product_stock(product, delta):
         product.quantity = p.quantity
 
 
-def merge_or_create_repair_item(repair, description, quantity, price, item_type, product=None, price_type=None):
+def merge_or_create_repair_item(
+    repair: Repair, 
+    description: str, 
+    quantity: int, 
+    price: Decimal, 
+    item_type: str, 
+    product: Optional[Product] = None, 
+    price_type: Optional[str] = None
+) -> Tuple[RepairItem, bool]:
     existing = None
     if product:
         existing = repair.items.filter(product=product, price_type=price_type).first()
@@ -75,7 +84,7 @@ def merge_or_create_repair_item(repair, description, quantity, price, item_type,
 
 
 @transaction.atomic
-def upsert_repair_items_from_post(repair, post_data):
+def upsert_repair_items_from_post(repair: Repair, post_data: Any) -> None:
     item_ids = post_data.getlist("item_id[]")
     descriptions = post_data.getlist("item_description[]")
     quantities = post_data.getlist("item_quantity[]")
@@ -136,7 +145,7 @@ def upsert_repair_items_from_post(repair, post_data):
     recalculate_repair_total(repair)
 
 
-def delete_repair_item(item):
+def delete_repair_item(item: RepairItem) -> None:
     with transaction.atomic():
         repair = item.repair
         if item.product:
@@ -145,7 +154,7 @@ def delete_repair_item(item):
         recalculate_repair_total(repair)
 
 
-def date_window(filter_type):
+def date_window(filter_type: str) -> Tuple[Optional[timezone.datetime], Optional[timezone.datetime]]:
     now = timezone.now()
     if filter_type == "daily":
         start = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -164,7 +173,7 @@ def date_window(filter_type):
     return start, end
 
 
-def earnings_snapshot(filter_type="all"):
+def earnings_snapshot(filter_type: str = "all") -> Dict[str, Any]:
     start, end = date_window(filter_type)
     item_qs = RepairItem.objects.filter(repair__status=Repair.STATUS_COMPLETED).select_related("product", "repair__car__customer")
     salary_qs = WorkerSalary.objects.filter(status="مدفوع")
@@ -211,21 +220,40 @@ def earnings_snapshot(filter_type="all"):
     return earnings
 
 
-def get_dashboard_context():
+def get_dashboard_context() -> Dict[str, Any]:
     today = timezone.localdate()
     repairs = Repair.objects.select_related("car__customer", "worker")
-    top_cars = (
-        Car.objects.annotate(repair_count=Count("repairs"))
-        .filter(repair_count__gt=0)
-        .order_by("-repair_count", "make")[:5]
-    )
-    completed_today = repairs.filter(status=Repair.STATUS_COMPLETED, date_completed__date=today)
     
-    # Calculate additional metrics
-    pending_repairs = repairs.filter(status=Repair.STATUS_PENDING).count()
-    in_progress_repairs = repairs.filter(status=Repair.STATUS_IN_PROGRESS).count()
-    completed_repairs = repairs.filter(status=Repair.STATUS_COMPLETED).count()
-    cancelled_repairs = repairs.filter(status=Repair.STATUS_CANCELLED).count()
+    # Get all repair counts in one query
+    repair_status_counts = (
+        repairs.values("status")
+        .annotate(count=Count("pk"))
+        .order_by("status")
+    )
+    
+    # Initialize counters
+    pending_repairs = in_progress_repairs = completed_repairs = cancelled_repairs = 0
+    for item in repair_status_counts:
+        if item["status"] == Repair.STATUS_PENDING:
+            pending_repairs = item["count"]
+        elif item["status"] == Repair.STATUS_IN_PROGRESS:
+            in_progress_repairs = item["count"]
+        elif item["status"] == Repair.STATUS_COMPLETED:
+            completed_repairs = item["count"]
+        elif item["status"] == Repair.STATUS_CANCELLED:
+            cancelled_repairs = item["count"]
+    
+    # Get today's completed repairs with related data
+    completed_today = repairs.filter(
+        status=Repair.STATUS_COMPLETED, 
+        date_completed__date=today
+    )[:5]
+    
+    # Get recent customers with cars count (prefetch cars)
+    recent_customers = Customer.objects.prefetch_related("cars")[:5]
+    
+    # Calculate today's revenue (completed today)
+    today_revenue = completed_today.aggregate(total=Sum("total_cost"))["total"] or 0
     
     # Calculate today's expenses (worker salaries paid today)
     today_expenses = WorkerSalary.objects.filter(
@@ -234,10 +262,20 @@ def get_dashboard_context():
     ).aggregate(total=Sum("amount"))["total"] or 0
     
     # Calculate low stock products
-    low_stock_products = Product.objects.filter(quantity__lt=5).count()
+    low_stock_products = Product.objects.filter(quantity__lt=5, is_active=True).count()
     
     # Calculate pending worker salaries
     pending_salaries = WorkerSalary.objects.filter(status="محفوظ").count()
+    
+    # Get top cars by repair count
+    top_cars = (
+        Car.objects.annotate(repair_count=Count("repairs"))
+        .filter(repair_count__gt=0)
+        .order_by("-repair_count", "make")[:5]
+    )
+    
+    # Get cancelled repairs for display
+    cancelled_repairs_display = repairs.filter(status=Repair.STATUS_CANCELLED)[:5]
     
     return {
         "customer_count": Customer.objects.count(),
@@ -246,16 +284,16 @@ def get_dashboard_context():
         "in_progress_count": in_progress_repairs,
         "completed_count": completed_repairs,
         "cancelled_count": cancelled_repairs,
-        "product_count": Product.objects.count(),
+        "product_count": Product.objects.filter(is_active=True).count(),
         "worker_count": Worker.objects.count(),
-        "recent_repairs": completed_today[:5],
-        "recent_customers": Customer.objects.prefetch_related("cars").all()[:5],
-        "total_revenue": completed_today.aggregate(total=Sum("total_cost"))["total"] or 0,
+        "recent_repairs": completed_today,
+        "recent_customers": recent_customers,
+        "total_revenue": today_revenue,
         "today_expenses": today_expenses,
         "low_stock_count": low_stock_products,
         "pending_salaries_count": pending_salaries,
         "top_cars": top_cars,
-        "cancelled_repairs": repairs.filter(status=Repair.STATUS_CANCELLED)[:5],
+        "cancelled_repairs": cancelled_repairs_display,
         "now": timezone.now(),
     }
 

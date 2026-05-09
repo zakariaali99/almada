@@ -2,21 +2,28 @@
 {% block content %}
 {% include 'includes/page_header.html' with title=customer.name subtitle='تفاصيل العميل' %}
 <div class="detail-grid">
-    <div class="section-card">
-        <h2>البيانات الأساسية</h2>
-        <p>الهاتف: {{ customer.phone|default:'-' }}</p>
-        <p>النوع: {{ customer.customer_type }}</p>
-        <p>العنوان: {{ customer.address|default:'-' }}</p>
-    </div>
-    <div class="section-card">
-        <h2>السيارات</h2>
-        <ul class="plain-list">
-            {% for car in customer.cars.all %}
-                <li><a href="{% url 'car_details' car.pk %}">{{ car }}</a></li>
-            {% empty %}
-                <li>لا توجد سيارات مرتبطة.</li>
-            {% endfor %}
-        </ul>
-    </div>
+<div class="section-card">
+<h2>البيانات الأساسية</h2>
+<p>الهاتف: {{ customer.phone|default:'-' }}</p>
+<p>النوع: <span class="badge {% if customer.customer_type == 'تاجر' %}badge-primary{% else %}badge-info{% endif %}">{{ customer.customer_type }}</span></p>
+<p>العنوان: {{ customer.address|default:'-' }}</p>
+<div class="actions" style="margin-top:1rem">
+<a class="btn btn-warning" href="{% url 'edit_customer' customer.pk %}">تعديل</a>
+{% url 'add_car' as add_car_url %}
+<a class="btn btn-secondary" href="{% url 'add_car' %}">إضافة سيارة</a>
+{% url 'delete_customer' customer.pk as delete_url %}
+{% include 'includes/delete_form.html' with action_url=delete_url confirm_message='هل أنت متأكد من حذف هذا العميل؟' %}
+</div>
+</div>
+<div class="section-card">
+<h2>السيارات</h2>
+<ul class="plain-list">
+{% for car in customer.cars.all %}
+<li><a href="{% url 'car_details' car.pk %}">{{ car }}</a></li>
+{% empty %}
+<li>لا توجد سيارات مرتبطة.</li>
+{% endfor %}
+</ul>
+</div>
 </div>
 {% endblock %}

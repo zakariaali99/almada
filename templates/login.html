@@ -2,36 +2,36 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول | نظام الخوارزمي</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل الدخول | نظام الخوارزمي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body class="login-body">
-    <section class="login-panel">
-        <div class="login-card">
-            <div class="login-logo">
-                <img src="{% static 'img/logo.png' %}" alt="Logo" class="logo-img">
-            </div>
-            <h1>نظام الخوارزمي</h1>
-            <p>نظام إدارة ورشة السيارات</p>
-            <form method="post" class="stack-form">
-                {% csrf_token %}
-                {{ form.non_field_errors }}
-                {% for field in form %}
-                    <div class="field">
-                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                        {{ field.errors }}
-                    </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-primary btn-lg w-full">دخول</button>
-            </form>
-        </div>
-    </section>
+<section class="login-panel">
+<div class="login-card">
+<div class="login-logo">
+<img src="{% static 'img/logo.png' %}" alt="Logo" class="logo-img">
+</div>
+<h1>نظام الخوارزمي</h1>
+<p>نظام إدارة ورشة السيارات</p>
+<form method="post" class="stack-form">
+{% csrf_token %}
+{{ form.non_field_errors }}
+{% for field in form %}
+<div class="field">
+<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+{{ field }}
+{{ field.errors }}
+</div>
+{% endfor %}
+<button type="submit" class="btn btn-primary btn-lg w-full">دخول</button>
+</form>
+</div>
+</section>
 </body>
 </html>

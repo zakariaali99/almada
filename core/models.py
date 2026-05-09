@@ -80,6 +80,7 @@ class Product(models.Model):
     retail_price = models.DecimalField(max_digits=MONEY_MAX_DIGITS, decimal_places=MONEY_DECIMAL_PLACES, default=Decimal("0.00"))
     quantity = models.IntegerField(default=0)
     product_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="قطع غيار")
+    is_active = models.BooleanField(default=True, verbose_name="نشط")
     date_added = models.DateTimeField(auto_now_add=True)
 
     class Meta:

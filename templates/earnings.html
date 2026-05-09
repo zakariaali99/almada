@@ -3,53 +3,53 @@
 {% include 'includes/page_header.html' with title='الأرباح' subtitle='تحليل الإيرادات والتكاليف' %}
 
 <div class="filters-inline">
-    <a class="btn {% if filter_type == 'daily' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=daily">اليوم</a>
-    <a class="btn {% if filter_type == 'weekly' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=weekly">هذا الأسبوع</a>
-    <a class="btn {% if filter_type == 'monthly' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=monthly">هذا الشهر</a>
-    <a class="btn {% if filter_type == 'yearly' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=yearly">هذا العام</a>
-    <a class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=all">جميع الفترات</a>
+<a class="btn {% if filter_type == 'daily' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=daily">اليوم</a>
+<a class="btn {% if filter_type == 'weekly' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=weekly">هذا الأسبوع</a>
+<a class="btn {% if filter_type == 'monthly' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=monthly">هذا الشهر</a>
+<a class="btn {% if filter_type == 'yearly' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=yearly">هذا العام</a>
+<a class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=all">جميع الفترات</a>
 </div>
 
 <section class="stats-grid">
-    <article class="stat-card">
-        <div class="stat-icon"><span class="material-icons-round">settings</span></div>
-        <div class="stat-info">
-            <span class="stat-label">قطع غيار</span>
-            <span class="stat-value">{{ earnings.spare_parts.profit|floatformat:2 }}</span>
-            <div class="progress-bar-container">
-                <div class="progress-bar" style="width: {% widthratio earnings.spare_parts.revenue earnings.summary.revenue 100 %}%"></div>
-            </div>
-            <a class="stat-link" href="{% url 'earnings_details' 'spare_parts' %}?filter={{ filter_type }}">التفاصيل ←</a>
-        </div>
-    </article>
-    <article class="stat-card">
-        <div class="stat-icon icon-amber"><span class="material-icons-round">water_drop</span></div>
-        <div class="stat-info">
-            <span class="stat-label">الزيوت</span>
-            <span class="stat-value">{{ earnings.oils.profit|floatformat:2 }}</span>
-            <div class="progress-bar-container">
-                <div class="progress-bar icon-amber" style="width: {% widthratio earnings.oils.revenue earnings.summary.revenue 100 %}%"></div>
-            </div>
-            <a class="stat-link" href="{% url 'earnings_details' 'oils' %}?filter={{ filter_type }}">التفاصيل ←</a>
-        </div>
-    </article>
-    <article class="stat-card">
-        <div class="stat-icon"><span class="material-icons-round">handyman</span></div>
-        <div class="stat-info">
-            <span class="stat-label">الخدمات</span>
-            <span class="stat-value">{{ earnings.services.profit|floatformat:2 }}</span>
-            <div class="progress-bar-container">
-                <div class="progress-bar icon-green" style="width: {% widthratio earnings.services.revenue earnings.summary.revenue 100 %}%"></div>
-            </div>
-            <a class="stat-link" href="{% url 'earnings_details' 'services' %}?filter={{ filter_type }}">التفاصيل ←</a>
-        </div>
-    </article>
-    <article class="stat-card">
-        <div class="stat-icon icon-green"><span class="material-icons-round">trending_up</span></div>
-        <div class="stat-info">
-            <span class="stat-label">إجمالي الربح</span>
-            <span class="stat-value">{{ earnings.summary.profit|floatformat:2 }}</span>
-        </div>
-    </article>
+<article class="stat-card">
+<div class="stat-icon"><span class="material-icons-round">settings</span></div>
+<div class="stat-info">
+<span class="stat-label">قطع غيار</span>
+<span class="stat-value">{{ earnings.spare_parts.profit|floatformat:2 }} <small>د.ل</small></span>
+<div class="progress-bar-container">
+<div class="progress-bar" style="width: {% widthratio earnings.spare_parts.revenue earnings.summary.revenue 100 %}%"></div>
+</div>
+<a class="stat-link" href="{% url 'earnings_details' 'spare_parts' %}?filter={{ filter_type }}">التفاصيل ←</a>
+</div>
+</article>
+<article class="stat-card">
+<div class="stat-icon icon-amber"><span class="material-icons-round">water_drop</span></div>
+<div class="stat-info">
+<span class="stat-label">الزيوت</span>
+<span class="stat-value">{{ earnings.oils.profit|floatformat:2 }} <small>د.ل</small></span>
+<div class="progress-bar-container">
+<div class="progress-bar icon-amber" style="width: {% widthratio earnings.oils.revenue earnings.summary.revenue 100 %}%"></div>
+</div>
+<a class="stat-link" href="{% url 'earnings_details' 'oils' %}?filter={{ filter_type }}">التفاصيل ←</a>
+</div>
+</article>
+<article class="stat-card">
+<div class="stat-icon icon-green"><span class="material-icons-round">handyman</span></div>
+<div class="stat-info">
+<span class="stat-label">الخدمات</span>
+<span class="stat-value">{{ earnings.services.profit|floatformat:2 }} <small>د.ل</small></span>
+<div class="progress-bar-container">
+<div class="progress-bar icon-green" style="width: {% widthratio earnings.services.revenue earnings.summary.revenue 100 %}%"></div>
+</div>
+<a class="stat-link" href="{% url 'earnings_details' 'services' %}?filter={{ filter_type }}">التفاصيل ←</a>
+</div>
+</article>
+<article class="stat-card">
+<div class="stat-icon icon-blue"><span class="material-icons-round">trending_up</span></div>
+<div class="stat-info">
+<span class="stat-label">إجمالي الربح</span>
+<span class="stat-value">{{ earnings.summary.profit|floatformat:2 }} <small>د.ل</small></span>
+</div>
+</article>
 </section>
 {% endblock %}

@@ -4,14 +4,18 @@
 {% url 'add_customer' as add_url %}
 {% include 'includes/page_header.html' with title='العملاء' subtitle='إدارة بيانات العملاء' action_url=add_url action_label='إضافة عميل جديد' %}
 <div class="section-card">
+<form method="get" class="search-form mb-3">
+<input type="text" name="q" placeholder="ابحث عن عميل بالاسم أو الهاتف..." value="{{ query|default:'' }}">
+<button type="submit" class="btn btn-secondary"><span class="material-icons-round">search</span></button>
+</form>
 <table class="data-table">
 <thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>العنوان</th><th>الإجراءات</th></tr></thead>
 <tbody>
-{% for customer in customers %}
+{% for customer in page_obj %}
 <tr>
 <td>{{ customer.name }}</td>
 <td>{{ customer.phone|default:'-' }}</td>
-<td>{{ customer.customer_type }}</td>
+<td><span class="badge {% if customer.customer_type == 'تاجر' %}badge-primary{% else %}badge-info{% endif %}">{{ customer.customer_type }}</span></td>
 <td>{{ customer.address|default:'-' }}</td>
 <td class="actions">
 <a class="btn btn-secondary" href="{% url 'customer_details' customer.pk %}">عرض</a>
@@ -26,4 +30,19 @@
 </tbody>
 </table>
 </div>
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+<span class="step-links">
+{% if page_obj.has_previous %}
+<a href="?page=1{% if query %}&q={{ query }}{% endif %}">&laquo; أول</a>
+<a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">سابق</a>
+{% endif %}
+<span class="current">صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}</span>
+{% if page_obj.has_next %}
+<a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">التالي</a>
+<a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">آخر &raquo;</a>
+{% endif %}
+</span>
+</div>
+{% endif %}
 {% endblock %}

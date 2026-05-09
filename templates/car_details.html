@@ -2,22 +2,27 @@
 {% block content %}
 {% include 'includes/page_header.html' with title=car.make subtitle='تفاصيل السيارة وسجل الإصلاحات' %}
 <div class="detail-grid">
-    <div class="section-card">
-        <p>العميل: <a href="{% url 'customer_details' car.customer.pk %}">{{ car.customer.name }}</a></p>
-        <p>الموديل: {{ car.model|default:'-' }}</p>
-        <p>اللوحة: {{ car.license_plate|default:'-' }}</p>
-        <p>الهيكل: {{ car.vin|default:'-' }}</p>
-        <p>اللون: {{ car.color|default:'-' }}</p>
-    </div>
-    <div class="section-card">
-        <h2>الإصلاحات</h2>
-        <ul class="plain-list">
-            {% for repair in car.repairs.all %}
-                <li><a href="{% url 'repair_details' repair.pk %}">إصلاح #{{ repair.pk }} - {{ repair.get_status_display }}</a></li>
-            {% empty %}
-                <li>لا توجد إصلاحات مسجلة.</li>
-            {% endfor %}
-        </ul>
-    </div>
+<div class="section-card">
+<p>العميل: <a href="{% url 'customer_details' car.customer.pk %}">{{ car.customer.name }}</a></p>
+<p>الموديل: {{ car.model|default:'-' }}</p>
+<p>اللوحة: {{ car.license_plate|default:'-' }}</p>
+<p>الهيكل: {{ car.vin|default:'-' }}</p>
+<p>اللون: {{ car.color|default:'-' }}</p>
+<div class="actions" style="margin-top:1rem">
+<a class="btn btn-warning" href="{% url 'edit_car' car.pk %}">تعديل</a>
+{% url 'delete_car' car.pk as delete_url %}
+{% include 'includes/delete_form.html' with action_url=delete_url confirm_message='هل أنت متأكد من حذف هذه السيارة؟' %}
+</div>
+</div>
+<div class="section-card">
+<h2>الإصلاحات</h2>
+<ul class="plain-list">
+{% for repair in car.repairs.all %}
+<li><a href="{% url 'repair_details' repair.pk %}">إصلاح #{{ repair.pk }}</a> — <span class="badge {% if repair.status == 'completed' %}badge-success{% elif repair.status == 'cancelled' %}badge-danger{% elif repair.status == 'in_progress' %}badge-warning{% else %}badge-info{% endif %}">{{ repair.get_status_display }}</span></li>
+{% empty %}
+<li>لا توجد إصلاحات مسجلة.</li>
+{% endfor %}
+</ul>
+</div>
 </div>
 {% endblock %}
