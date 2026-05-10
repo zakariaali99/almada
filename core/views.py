@@ -340,17 +340,23 @@ def delete_repair_item(request, pk):
 
 @login_required
 def invoices(request):
-    records = Repair.objects.select_related("car__customer", "worker")
+    records = Repair.objects.select_related("car__customer", "worker", "customer").order_by("-date", "-id")
     if request.GET.get("customer"):
         records = records.filter(car__customer_id=request.GET["customer"])
     if request.GET.get("start_date"):
         records = records.filter(date__gte=request.GET["start_date"])
     if request.GET.get("end_date"):
         records = records.filter(date__lte=request.GET["end_date"])
+    
+    # Pagination
+    paginator = Paginator(records, 25)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
     return render(
         request,
         "invoices.html",
-        {"invoices": records, "customers": Customer.objects.all()},
+        {"page_obj": page_obj, "customers": Customer.objects.all()},
     )
 
 
