@@ -11,7 +11,83 @@ MONEY_DECIMAL_PLACES = 2
 
 
 class User(AbstractUser):
-    pass
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="رقم الهاتف")
+
+    def __str__(self):
+        return self.get_full_name() or self.username
+
+
+class WorkshopSettings(models.Model):
+    workshop_name = models.CharField(max_length=200, default="الخوارزمي", verbose_name="اسم الورشة")
+    contact_number = models.CharField(max_length=20, blank=True, verbose_name="رقم التواصل")
+    location = models.CharField(max_length=500, blank=True, verbose_name="الموقع / العنوان")
+
+    class Meta:
+        verbose_name = "إعدادات الورشة"
+
+    def __str__(self):
+        return self.workshop_name
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class ActivityLog(models.Model):
+    ACTION_CHOICES = [
+        ("create", "إنشاء"),
+        ("update", "تعديل"),
+        ("delete", "حذف"),
+        ("status_change", "تغيير حالة"),
+        ("print", "طباعة"),
+        ("login", "تسجيل دخول"),
+        ("logout", "تسجيل خروج"),
+    ]
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="activity_logs")
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    target_model = models.CharField(max_length=50)
+    target_id = models.IntegerField(null=True, blank=True)
+    description = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-timestamp"]
+
+    def __str__(self):
+        return f"{self.user} - {self.get_action_display()} - {self.description[:50]}"
+
+
+class Expense(models.Model):
+    TYPE_CHOICES = [
+        ("product", "مصروفات منتجات"),
+        ("workshop", "مصروفات ورشة"),
+        ("personal", "مصروفات شخصية"),
+    ]
+    expense_type = models.CharField(max_length=20, choices=TYPE_CHOICES, verbose_name="نوع المصروف")
+    amount = models.DecimalField(max_digits=MONEY_MAX_DIGITS, decimal_places=MONEY_DECIMAL_PLACES, verbose_name="المبلغ")
+    notes = models.TextField(blank=True, verbose_name="ملاحظات")
+    date = models.DateField(default=timezone.now, verbose_name="التاريخ")
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="expenses")
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-date", "-pk"]
+        constraints = [
+            CheckConstraint(
+                check=Q(amount__gte=0),
+                name="expense_amount_non_negative",
+                violation_error_message="المبلغ لا يمكن أن يكون سالبًا",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.get_expense_type_display()} - {self.amount}"
 
 
 class Customer(models.Model):

@@ -1,0 +1,226 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فاتورة #{{ repair.pk }} | {{ workshop.workshop_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #06b6d4;
+            --text: #1a1a1a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f8fafc;
+            color: var(--text);
+            direction: rtl;
+        }
+        .print-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 10mm auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        @media print {
+            body { background: white; margin: 0; }
+            .print-container { margin: 0; box-shadow: none; width: 100%; }
+            .no-print { display: none !important; }
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .brand h1 { margin: 0; color: var(--primary); font-size: 28px; }
+        .brand p { margin: 5px 0 0; color: var(--text-muted); }
+        .invoice-meta { text-align: left; }
+        .invoice-meta h2 { margin: 0; font-size: 24px; }
+        .invoice-meta p { margin: 5px 0; }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .info-section h3 {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+        .info-section p { margin: 5px 0; line-height: 1.5; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+        }
+        th {
+            background: #f1f5f9;
+            text-align: right;
+            padding: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        
+        .totals {
+            width: 300px;
+            margin-right: auto;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .total-row.grand-total {
+            border-bottom: none;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .footer {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+        }
+        .workshop-info p { margin: 5px 0; color: var(--text-muted); font-size: 14px; }
+        .signature { text-align: center; width: 200px; }
+        .signature-line { border-top: 1px solid var(--text); margin-top: 40px; }
+        
+        .floating-actions {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: #64748b; color: white; }
+    </style>
+</head>
+<body>
+    <div class="print-container">
+        <div class="header">
+            <div class="brand">
+                <h1>{{ workshop.workshop_name }}</h1>
+                <p>لصيانة السيارات والمحركات</p>
+            </div>
+            <div class="invoice-meta">
+                <h2>فاتورة صيانة</h2>
+                <p>رقم الفاتورة: <strong>{{ invoice_number }}</strong></p>
+                <p>التاريخ: <strong>{{ repair.date|date:'Y-m-d' }}</strong></p>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-section">
+                <h3>بيانات العميل</h3>
+                <p><strong>{{ repair.get_customer.name|default:'عميل نقدي' }}</strong></p>
+                {% if repair.get_customer.phone %}<p>هاتف: {{ repair.get_customer.phone }}</p>{% endif %}
+                {% if repair.get_customer.address %}<p>العنوان: {{ repair.get_customer.address }}</p>{% endif %}
+            </div>
+            <div class="info-section">
+                <h3>بيانات المركبة</h3>
+                {% if repair.is_direct_sale %}
+                <p><strong>بيع مباشر</strong></p>
+                {% else %}
+                <p><strong>{{ repair.car.make }} {{ repair.car.model }}</strong></p>
+                <p>لوحة: {{ repair.car.license_plate|default:'-' }}</p>
+                <p>سنة الصنع: {{ repair.car.year|default:'-' }}</p>
+                {% endif %}
+                <p>المسؤول: {{ repair.worker.name|default:'-' }}</p>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th width="50%">الوصف</th>
+                    <th class="text-center">الكمية</th>
+                    <th class="text-left">سعر الوحدة</th>
+                    <th class="text-left">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in repair.items.all %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-left">{{ item.price|floatformat:2 }}</td>
+                    <td class="text-left">{{ item.total|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="total-row grand-total">
+                <span>الإجمالي النهائي:</span>
+                <span>{{ repair.total_cost|floatformat:2 }} د.ل</span>
+            </div>
+        </div>
+
+        {% if repair.notes %}
+        <div style="margin-top: 40px;">
+            <h3 style="font-size: 14px; color: var(--text-muted); margin-bottom: 10px;">ملاحظات:</h3>
+            <p style="margin: 0; line-height: 1.6;">{{ repair.notes }}</p>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <div class="workshop-info">
+                <p><strong>{{ workshop.workshop_name }}</strong></p>
+                {% if workshop.contact_number %}<p>هاتف: {{ workshop.contact_number }}</p>{% endif %}
+                {% if workshop.location %}<p>العنوان: {{ workshop.location }}</p>{% endif %}
+                <p>شكراً لتعاملكم معنا!</p>
+            </div>
+            <div class="signature">
+                <p>توقيع الورشة</p>
+                <div class="signature-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-actions no-print">
+        <button onclick="window.print()" class="btn btn-primary">طباعة الفاتورة</button>
+        <a href="{% url 'repair_details' repair.pk %}" class="btn btn-secondary">العودة للنظام</a>
+    </div>
+</body>
+</html>

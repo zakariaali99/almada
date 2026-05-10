@@ -22,17 +22,20 @@
         <h2><span class="material-icons-round">inventory</span> قائمة المنتجات</h2>
     </div>
     <div class="card-content">
-        <form method="get" class="search-form mb-4">
-            <input type="text" name="q" placeholder="ابحث عن منتج بالاسم..." value="{{ query|default:'' }}">
-            <button type="submit" class="btn btn-secondary">
-                <span class="material-icons-round">search</span>
-            </button>
-            <a class="btn {% if show_inactive %}btn-primary{% else %}btn-secondary{% endif %}" href="?show_inactive={% if show_inactive %}0{% else %}1{% endif %}{% if query %}&q={{ query }}{% endif %}">
-                <span class="material-icons-round">{% if show_inactive %}visibility_off{% else %}visibility{% endif %}</span>
-                <span>{% if show_inactive %}إخفاء المؤرشف{% else %}عرض المؤرشف{% endif %}</span>
-            </a>
-        </form>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;" class="no-print">
+            <form method="get" class="search-form" style="flex: 1; margin: 0;">
+                <input type="text" name="q" placeholder="ابحث عن منتج بالاسم..." value="{{ query|default:'' }}">
+                <button type="submit" class="btn btn-secondary">
+                    <span class="material-icons-round">search</span>
+                </button>
+                <a class="btn {% if show_inactive %}btn-primary{% else %}btn-secondary{% endif %}" href="?show_inactive={% if show_inactive %}0{% else %}1{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                    <span class="material-icons-round">{% if show_inactive %}visibility_off{% else %}visibility{% endif %}</span>
+                </a>
+            </form>
+            {% include 'includes/date_range_filter.html' %}
+        </div>
     </div>
+
     <div class="table-responsive">
         <table class="data-table">
             <thead>

@@ -1,0 +1,30 @@
+<form class="filters-inline no-print" method="get" style="display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap;">
+    {% for key, value in request.GET.items %}
+        {% if key != 'start_date' and key != 'end_date' and key != 'page' %}
+            <input type="hidden" name="{{ key }}" value="{{ value }}">
+        {% endif %}
+    {% endfor %}
+    
+    <div class="filter-group">
+        <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">من تاريخ</label>
+        <input type="date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+    </div>
+    
+    <div class="filter-group">
+        <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.2rem;">إلى تاريخ</label>
+        <input type="date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+    </div>
+    
+    <div class="filter-actions" style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary">
+            <span class="material-icons-round">filter_list</span>
+            <span>تصفية</span>
+        </button>
+        {% if request.GET.start_date or request.GET.end_date %}
+        <a href="?" class="btn btn-secondary">
+            <span class="material-icons-round">clear</span>
+            <span>مسح</span>
+        </a>
+        {% endif %}
+    </div>
+</form>

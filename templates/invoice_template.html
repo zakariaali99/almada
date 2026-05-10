@@ -16,10 +16,11 @@
             <span class="material-icons-round">picture_as_pdf</span>
             <span>تحميل PDF</span>
         </button>
-        <button class="btn btn-secondary" onclick="window.print()">
+        <a class="btn btn-secondary" href="{% url 'print_invoice' repair.pk %}" target="_blank">
             <span class="material-icons-round">print</span>
-            <span>طباعة (متصفح)</span>
-        </button>
+            <span>طباعة احترافية</span>
+        </a>
+
         <a class="btn btn-secondary" href="{% url 'repair_details' repair.pk %}">
             <span class="material-icons-round">arrow_forward</span>
             <span>العودة للأمر</span>

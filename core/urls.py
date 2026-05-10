@@ -50,4 +50,16 @@ urlpatterns = [
     path("download_database/", views.download_database, name="download_database"),
     path("restore_database/", views.restore_database, name="restore_database"),
     path("search/", views.global_search, name="global_search"),
+    
+    # New Paths
+    path("settings/", views.settings_view, name="settings"),
+    path("employees/", views.employees_list, name="employees"),
+    path("add_employee/", views.add_employee, name="add_employee"),
+    path("delete_employee/<int:pk>/", views.delete_employee, name="delete_employee"),
+    path("activity_log/", views.activity_log_view, name="activity_log"),
+    path("print_invoice/<int:repair_pk>/", views.print_invoice, name="print_invoice"),
+    path("change_repair_status/<int:pk>/", views.change_repair_status, name="change_repair_status"),
+    path("expenses/", views.expenses_list, name="expenses"),
+    path("add_expense/", views.add_expense, name="add_expense"),
+    path("delete_expense/<int:pk>/", views.delete_expense, name="delete_expense"),
 ]

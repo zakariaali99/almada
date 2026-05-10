@@ -1,7 +1,6 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
-
-from .models import Car, Customer, Product, Repair, RepairItem, Worker, WorkerSalary
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from .models import User, Car, Customer, Product, Repair, RepairItem, Worker, WorkerSalary, WorkshopSettings, Expense
 
 
 class ArabicDateInput(forms.DateInput):
@@ -170,3 +169,63 @@ class WorkerSalaryForm(forms.ModelForm):
 
 class RestoreDatabaseForm(forms.Form):
     database_file = forms.FileField(label="ملف قاعدة البيانات")
+
+
+class WorkshopSettingsForm(forms.ModelForm):
+    class Meta:
+        model = WorkshopSettings
+        fields = ["workshop_name", "contact_number", "location"]
+        labels = {
+            "workshop_name": "اسم الورشة",
+            "contact_number": "رقم التواصل",
+            "location": "الموقع / العنوان",
+        }
+        widgets = {
+            "workshop_name": forms.TextInput(attrs={"placeholder": "أدخل اسم الورشة..."}),
+            "contact_number": forms.TextInput(attrs={"placeholder": "رقم الهاتف للتواصل..."}),
+            "location": forms.TextInput(attrs={"placeholder": "عنوان الورشة بالتفصيل..."}),
+        }
+
+
+class EmployeeCreateForm(UserCreationForm):
+    phone = forms.CharField(label="رقم الهاتف", required=False, widget=forms.TextInput(attrs={"placeholder": "رقم هاتف الموظف..."}))
+    
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "phone", "username"]
+        labels = {
+            "first_name": "الاسم الأول",
+            "last_name": "اللقب",
+            "username": "اسم المستخدم",
+        }
+        help_texts = {
+            "username": "مطلوب. 150 حرفًا أو أقل. أحرف وأرقام و @/./+/-/_ فقط.",
+        }
+        widgets = {
+            "username": forms.TextInput(attrs={"placeholder": "يجب ان يكون ارقام او باللغة الانجليزية"}),
+        }
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.phone = self.cleaned_data["phone"]
+        if commit:
+            user.save()
+        return user
+
+
+class ExpenseForm(forms.ModelForm):
+    class Meta:
+        model = Expense
+        fields = ["expense_type", "amount", "notes", "date"]
+        labels = {
+            "expense_type": "نوع المصروف",
+            "amount": "المبلغ",
+            "notes": "ملاحظات",
+            "date": "التاريخ",
+        }
+        widgets = {
+            "date": ArabicDateInput(),
+            "notes": ArabicTextarea(attrs={"placeholder": "تفاصيل المصروف..."}),
+            "amount": forms.NumberInput(attrs={"step": "0.01", "placeholder": "0.00"}),
+        }
+

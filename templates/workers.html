@@ -19,8 +19,12 @@
 
 <div class="card animate-fadeIn">
     <div class="card-header">
-        <h2><span class="material-icons-round">engineering</span> قائمة العمال</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 1rem;">
+            <h2><span class="material-icons-round">engineering</span> قائمة العمال</h2>
+            {% include 'includes/date_range_filter.html' %}
+        </div>
     </div>
+
     <div class="table-responsive">
         <table class="data-table">
             <thead>

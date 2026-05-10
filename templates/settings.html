@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}إعدادات الورشة{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">settings</span>
+        </div>
+        <div>
+            <h1>إعدادات الورشة</h1>
+            <p>تخصيص بيانات النظام والمطبوعات</p>
+        </div>
+    </div>
+</div>
+
+<div class="two-col">
+    <div class="card animate-fadeIn">
+        <div class="card-header">
+            <h2><span class="material-icons-round">business</span> البيانات الأساسية</h2>
+        </div>
+        <form method="post">
+            <div class="card-content">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="form-error">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">حفظ الإعدادات</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="sidebar-info animate-stagger">
+        <div class="card">
+            <div class="card-header">
+                <h2><span class="material-icons-round">admin_panel_settings</span> الإدارة والأمان</h2>
+            </div>
+            <div class="card-content">
+                <div class="action-list">
+                    <a href="{% url 'employees' %}" class="action-item">
+                        <span class="material-icons-round">people</span>
+                        <div class="action-info">
+                            <h3>حسابات الموظفين</h3>
+                            <p>إدارة الصلاحيات وحسابات الدخول</p>
+                        </div>
+                        <span class="material-icons-round">chevron_left</span>
+                    </a>
+                    <a href="{% url 'activity_log' %}" class="action-item">
+                        <span class="material-icons-round">history</span>
+                        <div class="action-info">
+                            <h3>سجل النظام</h3>
+                            <p>مراقبة نشاط المستخدمين والعمليات</p>
+                        </div>
+                        <span class="material-icons-round">chevron_left</span>
+                    </a>
+                    <a href="{% url 'restore_database' %}" class="action-item">
+                        <span class="material-icons-round">restore</span>
+                        <div class="action-info">
+                            <h3>نسخ احتياطي</h3>
+                            <p>استعادة قاعدة البيانات وحفظ النسخ</p>
+                        </div>
+                        <span class="material-icons-round">chevron_left</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.action-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.action-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--surface-alt);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+.action-item:hover {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    transform: translateX(-5px);
+}
+.action-item .material-icons-round:first-child {
+    font-size: 2rem;
+    color: var(--primary);
+}
+.action-info { flex: 1; }
+.action-info h3 { margin: 0; font-size: 1rem; }
+.action-info p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+</style>
+{% endblock %}

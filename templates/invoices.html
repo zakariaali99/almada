@@ -21,8 +21,12 @@
 
 <div class="card animate-fadeIn">
     <div class="card-header">
-        <h2><span class="material-icons-round">receipt_long</span> سجل الفواتير</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 1rem;">
+            <h2><span class="material-icons-round">receipt_long</span> سجل الفواتير</h2>
+            {% include 'includes/date_range_filter.html' %}
+        </div>
     </div>
+
     <div class="table-responsive">
         <table class="data-table">
             <thead>
@@ -63,7 +67,11 @@
                     <a class="btn btn-secondary btn-sm" href="{% url 'view_invoice' invoice.pk %}" title="عرض">
                         <span class="material-icons-round">visibility</span>
                     </a>
+                    <a class="btn btn-primary btn-sm" href="{% url 'print_invoice' invoice.pk %}" target="_blank" title="طباعة">
+                        <span class="material-icons-round">print</span>
+                    </a>
                 </td>
+
             </tr>
             {% empty %}
             <tr><td colspan="7">

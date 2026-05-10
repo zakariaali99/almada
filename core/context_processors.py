@@ -9,5 +9,13 @@ def navigation_links(request):
             {"label": "السيارات", "icon": "directions_car", "url_name": "cars"},
             {"label": "العمال", "icon": "engineering", "url_name": "workers"},
             {"label": "المنتجات", "icon": "inventory_2", "url_name": "products"},
+            {"label": "المصروفات", "icon": "payments", "url_name": "expenses"},
+            {"label": "الإعدادات", "icon": "settings", "url_name": "settings"},
         ]
     }
+
+
+def workshop_settings(request):
+    from .models import WorkshopSettings
+    return {"workshop": WorkshopSettings.load()}
+

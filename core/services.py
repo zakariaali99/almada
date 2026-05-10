@@ -17,7 +17,7 @@ from django.utils import timezone
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 
-from .models import Car, Customer, Product, Repair, RepairItem, Worker, WorkerSalary
+from .models import Car, Customer, Expense, Product, Repair, RepairItem, Worker, WorkerSalary
 
 
 def validate_item_price(product: Optional[Product], submitted_price: Any, price_type: Optional[str]) -> None:
@@ -178,14 +178,36 @@ def date_window(filter_type: str) -> Tuple[Optional[timezone.datetime], Optional
     return start, end
 
 
-def earnings_snapshot(filter_type: str = "all") -> Dict[str, Any]:
-    start, end = date_window(filter_type)
+def earnings_snapshot(filter_type: str = "all", start_date=None, end_date=None) -> Dict[str, Any]:
+    if start_date or end_date:
+        start, end = start_date, end_date
+    else:
+        start, end = date_window(filter_type)
+        
     item_qs = RepairItem.objects.filter(repair__status=Repair.STATUS_COMPLETED).select_related("product", "repair__car__customer")
     salary_qs = WorkerSalary.objects.filter(status="مدفوع")
+    expense_qs = Expense.objects.all()
 
-    if start and end:
-        item_qs = item_qs.filter(repair__date_completed__gte=start, repair__date_completed__lt=end)
-        salary_qs = salary_qs.filter(payment_date__gte=start, payment_date__lt=end)
+    if start:
+        if isinstance(start, str):
+            item_qs = item_qs.filter(repair__date_completed__date__gte=start)
+            salary_qs = salary_qs.filter(payment_date__date__gte=start)
+            expense_qs = expense_qs.filter(date__gte=start)
+        else:
+            item_qs = item_qs.filter(repair__date_completed__gte=start)
+            salary_qs = salary_qs.filter(payment_date__gte=start)
+            expense_qs = expense_qs.filter(date__gte=start.date())
+
+    if end:
+        if isinstance(end, str):
+            item_qs = item_qs.filter(repair__date_completed__date__lte=end)
+            salary_qs = salary_qs.filter(payment_date__date__lte=end)
+            expense_qs = expense_qs.filter(date__lte=end)
+        else:
+            item_qs = item_qs.filter(repair__date_completed__lt=end)
+            salary_qs = salary_qs.filter(payment_date__lt=end)
+            expense_qs = expense_qs.filter(date__lt=end.date())
+
 
     categories = {
         "spare_parts": item_qs.filter(item_type="قطع غيار"),
@@ -221,8 +243,21 @@ def earnings_snapshot(filter_type: str = "all") -> Dict[str, Any]:
         "cost": total_cost,
         "profit": total_revenue - total_cost,
     }
+    
+    # Add Expenses
+    expenses_data = {
+        "product": expense_qs.filter(expense_type="product").aggregate(total=Sum("amount"))["total"] or 0,
+        "workshop": expense_qs.filter(expense_type="workshop").aggregate(total=Sum("amount"))["total"] or 0,
+        "personal": expense_qs.filter(expense_type="personal").aggregate(total=Sum("amount"))["total"] or 0,
+    }
+    expenses_data["total"] = sum(expenses_data.values())
+    
+    earnings["expenses"] = expenses_data
+    earnings["summary"]["profit"] -= expenses_data["total"]
+    
     earnings["salary_records"] = salary_qs
     return earnings
+
 
 
 def get_dashboard_context() -> Dict[str, Any]:

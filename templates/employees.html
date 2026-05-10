@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}إدارة الموظفين{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">people</span>
+        </div>
+        <div>
+            <h1>إدارة الموظفين</h1>
+            <p>إدارة حسابات الدخول وصلاحيات النظام</p>
+        </div>
+    </div>
+    <div class="actions">
+        <a href="{% url 'add_employee' %}" class="btn btn-primary">
+            <span class="material-icons-round">person_add</span>
+            <span>إضافة موظف جديد</span>
+        </a>
+    </div>
+</div>
+
+<div class="card animate-fadeIn">
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>الموظف</th>
+                    <th>اسم المستخدم</th>
+                    <th>رقم الهاتف</th>
+                    <th>الصلاحية</th>
+                    <th>آخر ظهور</th>
+                    <th class="actions">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <span class="material-icons-round user-avatar">account_circle</span>
+                            <div>
+                                <strong>{{ employee.get_full_name|default:employee.username }}</strong>
+                                <small style="display: block; color: var(--text-muted);">{{ employee.email|default:'-' }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td><code>{{ employee.username }}</code></td>
+                    <td>{{ employee.phone|default:'-' }}</td>
+                    <td>
+                        {% if employee.is_superuser %}
+                        <span class="badge badge-primary">مدير نظام</span>
+                        {% else %}
+                        <span class="badge badge-info">موظف</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ employee.last_login|date:"Y-m-d H:i"|default:'لم يسجل دخول بعد' }}</td>
+                    <td class="actions">
+                        {% if not employee.is_superuser or request.user == employee %}
+                        <a href="{% url 'edit_employee' employee.pk %}" class="btn btn-secondary btn-sm" title="تعديل">
+                            <span class="material-icons-round">edit</span>
+                        </a>
+                        {% endif %}
+                        {% if not employee.is_superuser %}
+                        <form action="{% url 'delete_employee' employee.pk %}" method="post" class="delete-form" style="display:inline;" data-confirm="هل أنت متأكد من حذف حساب الموظف {{ employee.username }}؟">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" title="حذف">
+                                <span class="material-icons-round">delete</span>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+.user-info { display: flex; align-items: center; gap: 0.75rem; }
+.user-avatar { font-size: 2.5rem; color: var(--primary); }
+</style>
+{% endblock %}

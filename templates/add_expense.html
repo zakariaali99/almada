@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}إضافة مصروف{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">add_card</span>
+        </div>
+        <div>
+            <h1>إضافة مصروف جديد</h1>
+            <p>تسجيل نفقة جديدة في المنظومة</p>
+        </div>
+    </div>
+</div>
+
+<div class="card animate-fadeIn" style="max-width: 600px; margin: 0 auto;">
+    <form method="post">
+        <div class="card-content">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="form-error">{{ field.errors.0 }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">حفظ المصروف</button>
+            <a href="{% url 'expenses' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

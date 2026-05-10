@@ -30,10 +30,18 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a class="brand" href="{% url 'dashboard' %}">
-                    <img src="{% static 'img/logo.png' %}" alt="Logo" style="width: 32px; height: 32px; object-fit: contain;">
-                    <span>الخوارزمي</span>
-                </a>
+                <div class="brand-wrapper">
+                    <a class="brand" href="{% url 'dashboard' %}">
+                        <img src="{% static 'img/logo.png' %}" alt="Logo" style="width: 32px; height: 32px; object-fit: contain;">
+                        <span class="nav-label">{{ workshop.workshop_name }}</span>
+                    </a>
+                    <button class="theme-toggle no-print" id="themeToggle" title="تبديل الوضع">
+                        <span class="material-icons-round">dark_mode</span>
+                    </button>
+                </div>
+                <button class="sidebar-toggle no-print" id="sidebarToggle" title="طي القائمة">
+                    <span class="material-icons-round">menu_open</span>
+                </button>
             </div>
             <nav class="sidebar-nav">
                 <form action="{% url 'global_search' %}" method="get" class="sidebar-search no-print">
@@ -66,7 +74,7 @@
                 </button>
                 <div class="mobile-brand">
                     <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 32px; object-fit: contain;">
-                    <span>الخوارزمي</span>
+                    <span>{{ workshop.workshop_name }}</span>
                 </div>
                 <button class="theme-toggle" id="themeToggleMobile">
                     <span class="material-icons-round">dark_mode</span>
@@ -74,11 +82,7 @@
             </header>
 
             <div class="page-shell">
-                <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;" class="no-print">
-                    <button class="theme-toggle" id="themeToggle" title="تبديل الوضع الليلي">
-                        <span class="material-icons-round">dark_mode</span>
-                    </button>
-                </div>
+
 
                 {% if messages %}
                 <div class="messages">
@@ -133,11 +137,73 @@
             });
         });
         
-        // Sync mobile theme toggle
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById("themeToggle");
         const themeToggleMobile = document.getElementById("themeToggleMobile");
-        if (themeToggleMobile) {
-            themeToggleMobile.addEventListener("click", () => document.getElementById("themeToggle").click());
+
+        function updateThemeIcons(t) {
+            const iconText = t === "dark" ? "light_mode" : "dark_mode";
+            if (themeToggle) {
+                const icon = themeToggle.querySelector(".material-icons-round");
+                if (icon) icon.textContent = iconText;
+            }
+            if (themeToggleMobile) {
+                const icon = themeToggleMobile.querySelector(".material-icons-round");
+                if (icon) icon.textContent = iconText;
+            }
         }
+        
+        updateThemeIcons(localStorage.getItem("theme") || "light");
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            
+            if (newTheme === "dark") {
+                document.documentElement.setAttribute("data-theme", "dark");
+            } else {
+                document.documentElement.removeAttribute("data-theme");
+            }
+            
+            localStorage.setItem("theme", newTheme);
+            updateThemeIcons(newTheme);
+        }
+
+        if (themeToggle) {
+            themeToggle.addEventListener("click", toggleTheme);
+        }
+        if (themeToggleMobile) {
+            themeToggleMobile.addEventListener("click", toggleTheme);
+        }
+
+        // Sidebar Folding Logic
+        const sidebar = document.getElementById("sidebar");
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        if (sidebar && sidebarToggle) {
+            const sidebarIcon = sidebarToggle.querySelector(".material-icons-round");
+            
+            function updateSidebarState(isCollapsed) {
+                if (isCollapsed) {
+                    sidebar.classList.add("collapsed");
+                    document.body.classList.add("sidebar-collapsed");
+                    if (sidebarIcon) sidebarIcon.textContent = "menu";
+                } else {
+                    sidebar.classList.remove("collapsed");
+                    document.body.classList.remove("sidebar-collapsed");
+                    if (sidebarIcon) sidebarIcon.textContent = "menu_open";
+                }
+            }
+
+            const isCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+            updateSidebarState(isCollapsed);
+
+            sidebarToggle.addEventListener("click", function() {
+                const nowCollapsed = !sidebar.classList.contains("collapsed");
+                updateSidebarState(nowCollapsed);
+                localStorage.setItem("sidebarCollapsed", nowCollapsed);
+            });
+        }
+
     });
     </script>
     {% block scripts %}{% endblock %}

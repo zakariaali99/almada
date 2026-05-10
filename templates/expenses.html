@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}المصروفات{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">payments</span>
+        </div>
+        <div>
+            <h1>المصروفات</h1>
+            <p>إدارة تكاليف الورشة والمصروفات النثرية</p>
+        </div>
+    </div>
+    <div class="actions">
+        <a href="{% url 'add_expense' %}" class="btn btn-primary">
+            <span class="material-icons-round">add</span>
+            <span>إضافة مصروف جديد</span>
+        </a>
+    </div>
+</div>
+
+<div class="card animate-fadeIn">
+    <div class="card-header">
+        <form class="filters-inline" method="get">
+            <div class="filter-group">
+                <select name="type" class="form-control">
+                    <option value="">جميع الأنواع</option>
+                    <option value="product" {% if request.GET.type == 'product' %}selected{% endif %}>مصروفات منتجات</option>
+                    <option value="workshop" {% if request.GET.type == 'workshop' %}selected{% endif %}>مصروفات ورشة</option>
+                    <option value="personal" {% if request.GET.type == 'personal' %}selected{% endif %}>مصروفات شخصية</option>
+                </select>
+            </div>
+            {% include 'includes/date_range_filter.html' %}
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>التاريخ</th>
+                    <th>نوع المصروف</th>
+                    <th>المبلغ</th>
+                    <th>المسؤول</th>
+                    <th>ملاحظات</th>
+                    <th class="actions">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in page_obj %}
+                <tr>
+                    <td>{{ expense.date|date:"Y-m-d" }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if expense.expense_type == 'product' %}badge-info
+                            {% elif expense.expense_type == 'workshop' %}badge-warning
+                            {% else %}badge-primary{% endif %}">
+                            {{ expense.get_expense_type_display }}
+                        </span>
+                    </td>
+                    <td><strong>{{ expense.amount|floatformat:2 }} د.ل</strong></td>
+                    <td>{{ expense.created_by.get_full_name|default:expense.created_by.username }}</td>
+                    <td>{{ expense.notes|truncatechars:50 }}</td>
+                    <td class="actions">
+                        <form action="{% url 'delete_expense' expense.pk %}" method="post" class="delete-form" style="display:inline;" data-confirm="هل أنت متأكد من حذف هذا المصروف؟">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" title="حذف">
+                                <span class="material-icons-round">delete</span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center">لا توجد مصروفات مسجلة</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer">
+        {% include 'includes/pagination.html' %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

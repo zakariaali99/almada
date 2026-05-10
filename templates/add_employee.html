@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}إضافة موظف{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">person_add</span>
+        </div>
+        <div>
+            <h1>إضافة موظف جديد</h1>
+            <p>إنشاء حساب دخول جديد للمنظومة</p>
+        </div>
+    </div>
+</div>
+
+<div class="card animate-fadeIn" style="max-width: 600px; margin: 0 auto;">
+    <form method="post">
+        <div class="card-content">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <small class="form-help" style="display: block; margin-top: 0.25rem; color: var(--text-muted);">{{ field.help_text }}</small>
+                {% endif %}
+                {% if field.errors %}
+                <div class="form-error">{{ field.errors.0 }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">إنشاء الحساب</button>
+            <a href="{% url 'employees' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

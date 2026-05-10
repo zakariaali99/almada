@@ -1,26 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // --- Theme Toggle Logic ---
-  const themeToggle = document.getElementById("themeToggle");
-  const currentTheme = localStorage.getItem("theme") || "light";
-
-  if (currentTheme === "dark") {
-    document.documentElement.setAttribute("data-theme", "dark");
-  }
-
-  if (themeToggle) {
-    themeToggle.addEventListener("click", function () {
-      let theme = document.documentElement.getAttribute("data-theme");
-      if (theme === "dark") {
-        document.documentElement.setAttribute("data-theme", "light");
-        localStorage.setItem("theme", "light");
-      } else {
-        document.documentElement.setAttribute("data-theme", "dark");
-        localStorage.setItem("theme", "dark");
-      }
-    });
-  }
-
   // --- Table Row Clickability ---
+
   const tableRows = document.querySelectorAll(".data-table tbody tr[data-href]");
   tableRows.forEach(row => {
     row.addEventListener("click", () => {
@@ -78,4 +58,3 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
-

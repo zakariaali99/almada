@@ -12,9 +12,9 @@
         </div>
     </div>
     <div class="actions no-print">
-        <a href="{% url 'view_invoice' repair.pk %}" class="btn btn-primary">
-            <span class="material-icons-round">receipt_long</span>
-            <span>عرض الفاتورة</span>
+        <a href="{% url 'print_invoice' repair.pk %}" target="_blank" class="btn btn-primary">
+            <span class="material-icons-round">print</span>
+            <span>طباعة الفاتورة</span>
         </a>
         <a href="{% url 'edit_repair' repair.pk %}" class="btn btn-secondary">
             <span class="material-icons-round">edit</span>
@@ -97,7 +97,23 @@
             </div>
         </div>
     </div>
+    </div>
 </div>
+
+<div class="card animate-fadeIn no-print" style="margin-top: 1.5rem;">
+    <div class="card-header">
+        <h2><span class="material-icons-round">update</span> تحديث حالة الإصلاح</h2>
+    </div>
+    <div class="card-content">
+        <div class="status-buttons" style="display: flex; gap: 1rem; justify-content: center; padding: 1rem;">
+            <button class="btn {% if repair.status == 'pending' %}btn-primary{% else %}btn-secondary{% endif %}" onclick="updateStatus('pending')">قيد الانتظار</button>
+            <button class="btn {% if repair.status == 'in_progress' %}btn-warning{% else %}btn-secondary{% endif %}" onclick="updateStatus('in_progress')">قيد التنفيذ</button>
+            <button class="btn {% if repair.status == 'completed' %}btn-success{% else %}btn-secondary{% endif %}" onclick="handleCompletion()">مكتمل</button>
+            <button class="btn {% if repair.status == 'cancelled' %}btn-danger{% else %}btn-secondary{% endif %}" onclick="updateStatus('cancelled')">ملغي</button>
+        </div>
+    </div>
+</div>
+
 
 <div class="card animate-fadeIn" style="animation-delay: 0.2s;">
     <div class="card-header">
@@ -148,3 +164,76 @@
     </div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script>
+function updateStatus(status, workerData = {}) {
+    const data = {
+        status: status,
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+        ...workerData
+    };
+    
+    $.post("{% url 'change_repair_status' repair.pk %}", data)
+        .done(function() {
+            location.reload();
+        })
+        .fail(function() {
+            Swal.fire("خطأ", "فشل تحديث الحالة", "error");
+        });
+}
+
+function handleCompletion() {
+    if ("{{ repair.status }}" === "completed") return;
+    
+    Swal.fire({
+        title: 'إتمام الإصلاح ودفع العمال',
+        html: `
+            <div style="text-align: right;">
+                <p>اختر العامل وحدد المبلغ المدفوع له:</p>
+                <div id="worker-payments">
+                    <div class="payment-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <select class="swal2-select worker-select" style="margin: 0; flex: 1;">
+                            {% if repair.worker %}
+                            <option value="{{ repair.worker.id }}">{{ repair.worker.name }} (الأساسي)</option>
+                            {% else %}
+                            <option value="">اختر عاملاً</option>
+                            {% endif %}
+                            {% for worker in workers %}
+                                {% if not repair.worker or worker.id != repair.worker.id %}
+                                    <option value="{{ worker.id }}">{{ worker.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <input type="number" class="swal2-input worker-amount" style="margin: 0; width: 120px;" placeholder="المبلغ">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addWorkerRow()" style="margin-top: 10px;">+ إضافة عامل آخر</button>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'تأكيد الإتمام والصرف',
+        cancelButtonText: 'إلغاء',
+        preConfirm: () => {
+            const worker_ids = Array.from(document.querySelectorAll('.worker-select')).map(s => s.value);
+            const amounts = Array.from(document.querySelectorAll('.worker-amount')).map(i => i.value);
+            return { worker_ids, amounts };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            updateStatus('completed', { 
+                'worker_ids': result.value.worker_ids, 
+                'amounts': result.value.amounts 
+            });
+        }
+    });
+}
+
+function addWorkerRow() {
+    const row = document.querySelector('.payment-row').cloneNode(true);
+    row.querySelector('.worker-amount').value = '';
+    document.getElementById('worker-payments').appendChild(row);
+}
+</script>
+{% endblock %}
+

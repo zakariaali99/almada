@@ -142,8 +142,13 @@ input, select, textarea, button { font: inherit; }
   flex: 1;
   margin-right: var(--sidebar-w);
   min-width: 0;
-  transition: margin 0.3s var(--ease);
+  transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+body.sidebar-collapsed .main-content {
+  margin-right: 80px;
+}
+
 
 .page-shell {
   padding: 2rem 2.5rem 3rem;

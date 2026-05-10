@@ -11,6 +11,12 @@
             <p>متابعة الإيرادات وتكاليف التشغيل</p>
         </div>
     </div>
+    <div class="actions">
+        <a href="{% url 'add_expense' %}" class="btn btn-primary">
+            <span class="material-icons-round">add</span>
+            <span>إضافة مصروف</span>
+        </a>
+    </div>
 </div>
 
 <div class="card animate-fadeIn">
@@ -20,8 +26,13 @@
         <a class="btn {% if filter_type == 'monthly' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=monthly">هذا الشهر</a>
         <a class="btn {% if filter_type == 'yearly' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=yearly">هذا العام</a>
         <a class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-secondary{% endif %}" href="?filter=all">جميع الفترات</a>
+        
+        <div style="border-right: 1px solid var(--border); margin: 0 1rem; height: 30px;"></div>
+        
+        {% include 'includes/date_range_filter.html' %}
     </div>
 </div>
+
 
 <section class="stats-grid animate-stagger">
     <article class="stat-card">
@@ -48,7 +59,16 @@
             <a class="stat-link" href="{% url 'earnings_details' 'services' %}?filter={{ filter_type }}">عرض التفاصيل</a>
         </div>
     </article>
+    <article class="stat-card">
+        <div class="stat-icon icon-red"><span class="material-icons-round">payments</span></div>
+        <div class="stat-info">
+            <span class="stat-label">مصروفات الورشة</span>
+            <span class="stat-value">{{ earnings.expenses.total|floatformat:2 }} <small>د.ل</small></span>
+            <a class="stat-link" href="{% url 'expenses' %}?start_date={{ request.GET.start_date }}&end_date={{ request.GET.end_date }}">عرض التفاصيل</a>
+        </div>
+    </article>
     <article class="stat-card" style="border-color: var(--primary); background: var(--primary-light);">
+
         <div class="stat-icon icon-blue"><span class="material-icons-round">trending_up</span></div>
         <div class="stat-info">
             <span class="stat-label">إجمالي الربح الصافي</span>
