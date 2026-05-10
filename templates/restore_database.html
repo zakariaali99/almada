@@ -1,9 +1,24 @@
 {% extends 'base.html' %}
+{% block title %}استعادة قاعدة البيانات{% endblock %}
 {% block content %}
-{% include 'includes/page_header.html' with title='استعادة قاعدة البيانات' subtitle='هذه العملية تستبدل البيانات الحالية بعد إنشاء نسخة احتياطية تلقائية' %}
-<form method="post" enctype="multipart/form-data" class="stack-form section-card">
-    {% csrf_token %}
-    {% include 'includes/form_fields.html' with form=form %}
-    <button type="submit" class="btn btn-danger">استعادة</button>
-</form>
+{% include 'includes/page_header.html' with title='استعادة قاعدة البيانات' subtitle='هذه العملية تستبدل البيانات الحالية بعد إنشاء نسخة احتياطية تلقائية' icon='restore' %}
+
+<div class="form-container animate-fadeIn">
+    <div class="card">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="card-content">
+                <div class="stack-form">
+                    {% include 'includes/form_fields.html' with form=form %}
+                </div>
+            </div>
+            <div class="card-footer" style="text-align: center;">
+                <button type="submit" class="btn btn-danger btn-lg full-width">
+                    <span class="material-icons-round">restore</span>
+                    <span>استعادة</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

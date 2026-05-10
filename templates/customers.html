@@ -1,48 +1,76 @@
 {% extends 'base.html' %}
 {% block title %}العملاء{% endblock %}
 {% block content %}
-{% url 'add_customer' as add_url %}
-{% include 'includes/page_header.html' with title='العملاء' subtitle='إدارة بيانات العملاء' action_url=add_url action_label='إضافة عميل جديد' %}
-<div class="section-card">
-<form method="get" class="search-form mb-3">
-<input type="text" name="q" placeholder="ابحث عن عميل بالاسم أو الهاتف..." value="{{ query|default:'' }}">
-<button type="submit" class="btn btn-secondary"><span class="material-icons-round">search</span></button>
-</form>
-<table class="data-table">
-<thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>العنوان</th><th>الإجراءات</th></tr></thead>
-<tbody>
-{% for customer in page_obj %}
-<tr>
-<td>{{ customer.name }}</td>
-<td>{{ customer.phone|default:'-' }}</td>
-<td><span class="badge {% if customer.customer_type == 'تاجر' %}badge-primary{% else %}badge-info{% endif %}">{{ customer.customer_type }}</span></td>
-<td>{{ customer.address|default:'-' }}</td>
-<td class="actions">
-<a class="btn btn-secondary" href="{% url 'customer_details' customer.pk %}">عرض</a>
-<a class="btn btn-warning" href="{% url 'edit_customer' customer.pk %}">تعديل</a>
-{% url 'delete_customer' customer.pk as delete_url %}
-{% include 'includes/delete_form.html' with action_url=delete_url %}
-</td>
-</tr>
-{% empty %}
-<tr><td colspan="5">لا يوجد عملاء.</td></tr>
-{% endfor %}
-</tbody>
-</table>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">people</span>
+        </div>
+        <div>
+            <h1>العملاء</h1>
+            <p>إدارة بيانات العملاء والشركات</p>
+        </div>
+    </div>
+    <a href="{% url 'add_customer' %}" class="btn btn-primary">
+        <span class="material-icons-round">person_add</span>
+        <span>إضافة عميل جديد</span>
+    </a>
 </div>
+
+<div class="card animate-fadeIn">
+    <div class="card-header">
+        <h2><span class="material-icons-round">group</span> قائمة العملاء</h2>
+    </div>
+    <div class="card-content">
+        <form method="get" class="search-form mb-4">
+            <input type="text" name="q" placeholder="ابحث عن عميل بالاسم أو الهاتف..." value="{{ query|default:'' }}">
+            <button type="submit" class="btn btn-secondary">
+                <span class="material-icons-round">search</span>
+            </button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>العنوان</th><th class="no-print">الإجراءات</th></tr></thead>
+            <tbody>
+            {% for customer in page_obj %}
+            <tr data-href="{% url 'customer_details' customer.pk %}">
+                <td><strong>{{ customer.name }}</strong></td>
+                <td>{{ customer.phone|default:'-' }}</td>
+                <td><span class="badge {% if customer.customer_type == 'تاجر' %}badge-primary{% else %}badge-info{% endif %}">{{ customer.customer_type }}</span></td>
+                <td>{{ customer.address|default:'-' }}</td>
+                <td class="actions no-print" onclick="event.stopPropagation();">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'edit_customer' customer.pk %}" title="تعديل">
+                        <span class="material-icons-round">edit</span>
+                    </a>
+                    {% url 'delete_customer' customer.pk as delete_url %}
+                    {% include 'includes/delete_form.html' with action_url=delete_url %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">
+                <div class="empty-state">
+                    <span class="material-icons-round">group_off</span>
+                    <h3>لا يوجد عملاء مطابقين للبحث</h3>
+                </div>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {% if page_obj.has_other_pages %}
 <div class="pagination">
-<span class="step-links">
-{% if page_obj.has_previous %}
-<a href="?page=1{% if query %}&q={{ query }}{% endif %}">&laquo; أول</a>
-<a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">سابق</a>
-{% endif %}
-<span class="current">صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}</span>
-{% if page_obj.has_next %}
-<a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">التالي</a>
-<a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">آخر &raquo;</a>
-{% endif %}
-</span>
+    {% if page_obj.has_previous %}
+    <a href="?page=1{% if query %}&q={{ query }}{% endif %}"><span class="material-icons-round">first_page</span></a>
+    <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}"><span class="material-icons-round">navigate_before</span></a>
+    {% endif %}
+    <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}"><span class="material-icons-round">navigate_next</span></a>
+    <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}"><span class="material-icons-round">last_page</span></a>
+    {% endif %}
 </div>
 {% endif %}
 {% endblock %}

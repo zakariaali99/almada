@@ -1,14 +1,46 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}{{ page_title }}{% endblock %}
 {% block content %}
-{% include 'includes/page_header.html' with title=page_title subtitle=page_subtitle %}
-<form method="post" class="stack-form section-card">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    {% include 'includes/form_fields.html' with form=form %}
-    {% include 'includes/repair_items_table.html' with items=items products=products %}
-    <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
-</form>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">build</span>
+        </div>
+        <div>
+            <h1>{{ page_title }}</h1>
+            <p>{{ page_subtitle }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="form-container wide-form animate-fadeIn">
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+            <div class="card-content">
+                <div class="stack-form">
+                    {{ form.non_field_errors }}
+                    {% include 'includes/form_fields.html' with form=form %}
+                </div>
+
+                <div style="border-top: 1px solid var(--border-light); margin-top: 2rem; padding-top: 2rem;">
+                    <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="material-icons-round" style="color: var(--primary);">inventory</span>
+                        قطع الغيار والخدمات المضافة
+                    </h2>
+                    {% include 'includes/repair_items_table.html' with items=items products=products %}
+                </div>
+            </div>
+            <div class="card-footer" style="text-align: center;">
+                <button type="submit" class="btn btn-primary btn-lg full-width">
+                    <span class="material-icons-round">check_circle</span>
+                    <span>{{ submit_label|default:'حفظ أمر الإصلاح' }}</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'js/repair-form.js' %}"></script>

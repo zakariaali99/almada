@@ -39,6 +39,7 @@ from .services import (
     update_repair_item,
     upsert_repair_items_from_post,
     validate_item_price,
+    generate_invoice_pdf,
 )
 
 
@@ -375,6 +376,37 @@ def add_invoice(request):
             repair.delete()
             form.add_error(None, exc.message)
     return render(request, "add_invoice.html", _repair_form_context(form, page_title="إضافة فاتورة", page_subtitle="إنشاء فاتورة من إصلاح جديد", submit_label="حفظ الفاتورة"))
+
+
+@login_required
+def create_direct_invoice(request):
+    if request.method == "POST":
+        customer_id = request.POST.get("customer")
+        customer = Customer.objects.filter(pk=customer_id).first() if customer_id else None
+        
+        repair = Repair.objects.create(
+            customer=customer,
+            description="فاتورة مبيعات مباشرة",
+            status=Repair.STATUS_COMPLETED,
+            date=timezone.now().date(),
+            is_direct_sale=True
+        )
+        try:
+            upsert_repair_items_from_post(repair, request.POST)
+            messages.success(request, "تم إنشاء فاتورة المبيعات بنجاح")
+            return redirect("view_invoice", repair_pk=repair.pk)
+        except ValidationError as exc:
+            repair.delete()
+            messages.error(request, f"خطأ: {exc.message}")
+            
+    context = {
+        "customers": Customer.objects.all(),
+        "products": Product.objects.filter(is_active=True),
+        "page_title": "مبيعات مباشرة (نقطة بيع)",
+        "page_subtitle": "إنشاء فاتورة سريعة بدون مركبة",
+        "submit_label": "إصدار الفاتورة",
+    }
+    return render(request, "create_direct_invoice.html", context)
 
 
 @login_required

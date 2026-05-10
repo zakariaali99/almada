@@ -2,31 +2,76 @@
 FIXES — Component-level overrides & missing styles
 ========================================================================== */
 
-.actions .btn { min-width: 64px; }
-.section-card .actions { margin-bottom: 1.25rem; }
+/* Action button sizing */
+.actions .btn { min-width: 44px; padding: 0.5rem; }
 
-.field label { font-weight: 700; font-size: var(--font-size-base, 0.9375rem); color: var(--text-secondary, #52525b); }
-.field small { color: var(--text-muted, #a1a1aa); font-size: var(--font-size-sm, 0.8125rem); }
+/* Field helpers */
+.field small { color: var(--text-muted); font-size: var(--font-size-xs); margin-top: 0.125rem; }
 
+/* Compact stat grid */
 .stats-grid.compact { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 
-.section-card p {
-  padding: 0.625rem 0;
-  border-bottom: 1px solid var(--border-light, #f4f4f5);
-  font-size: var(--font-size-base, 0.9375rem);
-  color: var(--text-secondary, #52525b);
-  margin: 0;
-}
-.section-card p:last-child { border-bottom: 0; }
-.section-card p a { color: var(--primary-dark, #0891b2); font-weight: 600; }
-.section-card p a:hover { color: var(--primary, #06b6d4); text-decoration: underline; }
+/* Table responsive overrides */
+.table-responsive { border: 0; background: var(--surface); }
 
-.table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* Form field error styling */
+.field .errorlist { color: var(--danger); font-size: var(--font-size-xs); font-weight: 700; list-style: none; padding: 0.25rem 0 0; margin: 0; }
+.errorlist { color: var(--danger); font-size: var(--font-size-sm); font-weight: 700; list-style: none; padding: 0; margin: 0 0 1rem; }
 
-.data-table th, .data-table td { text-align: right; }
-
-.login-body .sidebar,
-.login-body .mobile-header { display: none !important; }
+/* Dark mode specific fixes */
+[data-theme="dark"] .card, [data-theme="dark"] .section-card { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .data-table th { background: #121212; color: var(--text-muted); }
+[data-theme="dark"] .data-table td { border-bottom-color: #18181b; }
+[data-theme="dark"] .card-footer { background: #121212; }
 
 /* Delete form inline display */
-.delete-form { display: inline; }
+.delete-form { display: inline-flex; }
+
+/* Animation utilities (canonical definitions) */
+.animate-fadeIn { animation: pageIn 0.5s var(--ease) both; }
+.animate-stagger > * { opacity: 0; }
+.animate-stagger > *:nth-child(1) { animation: pageIn 0.5s var(--ease) 0.1s forwards; }
+.animate-stagger > *:nth-child(2) { animation: pageIn 0.5s var(--ease) 0.2s forwards; }
+.animate-stagger > *:nth-child(3) { animation: pageIn 0.5s var(--ease) 0.3s forwards; }
+.animate-stagger > *:nth-child(4) { animation: pageIn 0.5s var(--ease) 0.4s forwards; }
+
+/* Card internal spacing helpers */
+.card-content .search-form,
+.card-content .filters-grid { margin-bottom: 1.5rem; }
+
+/* Filters inline (pill-style for earnings) */
+.filters-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+}
+
+/* Login override: always single-column */
+.login-card .stack-form {
+  display: flex;
+  flex-direction: column;
+}
+.login-card .stack-form .field { width: 100%; }
+
+/* Summary row in cards */
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--border-light);
+  background: var(--surface-alt);
+}
+
+/* Form container centering */
+.form-container { max-width: 640px; margin: 0 auto; }
+.form-container.wide-form { max-width: 1100px; }
+.premium-form .card-content,
+.premium-form .form-body { padding: 2.5rem; }
+.premium-form .card-footer,
+.premium-form .form-footer {
+  border-top: 1px solid var(--border-light);
+  padding: 2rem 2.5rem;
+}
+.full-width { width: 100%; justify-content: center; }

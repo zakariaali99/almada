@@ -1,28 +1,98 @@
 {% extends 'base.html' %}
+{% block title %}تفاصيل السيارة | {{ car }}{% endblock %}
 {% block content %}
-{% include 'includes/page_header.html' with title=car.make subtitle='تفاصيل السيارة وسجل الإصلاحات' %}
-<div class="detail-grid">
-<div class="section-card">
-<p>العميل: <a href="{% url 'customer_details' car.customer.pk %}">{{ car.customer.name }}</a></p>
-<p>الموديل: {{ car.model|default:'-' }}</p>
-<p>اللوحة: {{ car.license_plate|default:'-' }}</p>
-<p>الهيكل: {{ car.vin|default:'-' }}</p>
-<p>اللون: {{ car.color|default:'-' }}</p>
-<div class="actions" style="margin-top:1rem">
-<a class="btn btn-warning" href="{% url 'edit_car' car.pk %}">تعديل</a>
-{% url 'delete_car' car.pk as delete_url %}
-{% include 'includes/delete_form.html' with action_url=delete_url confirm_message='هل أنت متأكد من حذف هذه السيارة؟' %}
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">directions_car</span>
+        </div>
+        <div>
+            <h1>{{ car }}</h1>
+            <p>سجل المركبة وتاريخ الصيانات</p>
+        </div>
+    </div>
+    <div class="actions no-print">
+        <a href="{% url 'add_repair' %}?car={{ car.pk }}" class="btn btn-primary">
+            <span class="material-icons-round">build</span>
+            <span>بدء إصلاح جديد</span>
+        </a>
+        <a href="{% url 'edit_car' car.pk %}" class="btn btn-secondary">
+            <span class="material-icons-round">edit</span>
+            <span>تعديل البيانات</span>
+        </a>
+    </div>
 </div>
-</div>
-<div class="section-card">
-<h2>الإصلاحات</h2>
-<ul class="plain-list">
-{% for repair in car.repairs.all %}
-<li><a href="{% url 'repair_details' repair.pk %}">إصلاح #{{ repair.pk }}</a> — <span class="badge {% if repair.status == 'completed' %}badge-success{% elif repair.status == 'cancelled' %}badge-danger{% elif repair.status == 'in_progress' %}badge-warning{% else %}badge-info{% endif %}">{{ repair.get_status_display }}</span></li>
-{% empty %}
-<li>لا توجد إصلاحات مسجلة.</li>
-{% endfor %}
-</ul>
-</div>
+
+<div class="two-col animate-fadeIn">
+    <div class="card">
+        <div class="card-header">
+            <h2><span class="material-icons-round">info</span> مواصفات السيارة</h2>
+        </div>
+        <div class="card-content">
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="detail-label">العميل</span>
+                    <span class="detail-value"><a href="{% url 'customer_details' car.customer.pk %}">{{ car.customer.name }}</a></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">المصنع / الموديل</span>
+                    <span class="detail-value">{{ car.make }} {{ car.model|default:'' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">رقم اللوحة</span>
+                    <span class="detail-value"><span class="badge badge-info">{{ car.plate_number|default:'-' }}</span></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">السنة</span>
+                    <span class="detail-value">{{ car.year|default:'-' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">رقم الهيكل (VIN)</span>
+                    <span class="detail-value" style="font-family: monospace;">{{ car.vin|default:'-' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2><span class="material-icons-round">history</span> تاريخ الصيانة</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>رقم الأمر</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for repair in car.repairs.all %}
+                    <tr data-href="{% url 'repair_details' repair.pk %}">
+                        <td><strong>#{{ repair.pk }}</strong></td>
+                        <td>{{ repair.date|date:'Y-m-d' }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if repair.status == 'completed' %}badge-success
+                                {% elif repair.status == 'cancelled' %}badge-danger
+                                {% elif repair.status == 'in_progress' %}badge-warning
+                                {% else %}badge-info{% endif %}">
+                                {{ repair.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3">
+                        <div class="empty-state" style="padding: 1rem;">
+                            <span class="material-icons-round">build_circle</span>
+                            <h3>لا توجد إصلاحات مسجلة لهذه السيارة</h3>
+                        </div>
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,67 +1,84 @@
 {% extends 'base.html' %}
 {% block title %}نتائج البحث{% endblock %}
 {% block content %}
-{% if query %}{% include 'includes/page_header.html' with title='نتائج البحث' query_label='البحث عن: ' subtitle=query %}{% else %}{% include 'includes/page_header.html' with title='نتائج البحث' subtitle='ابحث في العملاء والسيارات والإصلاحات' %}{% endif %}
+{% if query %}{% include 'includes/page_header.html' with title='نتائج البحث' subtitle=query icon='search' %}{% else %}{% include 'includes/page_header.html' with title='نتائج البحث' subtitle='ابحث في العملاء والسيارات والإصلاحات' icon='search' %}{% endif %}
 
 {% if not results.customers and not results.cars and not results.repairs %}
-    <div class="section-card">
-        <p>لا توجد نتائج مطابقة لبحثك.</p>
+    <div class="card">
+        <div class="card-content">
+            <div class="empty-state">
+                <span class="material-icons-round">search_off</span>
+                <h3>لا توجد نتائج مطابقة لبحثك</h3>
+            </div>
+        </div>
     </div>
 {% else %}
     {% if results.customers %}
-        <div class="section-card">
-            <div class="section-card-header"><h2>العملاء</h2></div>
+    <div class="card animate-fadeIn">
+        <div class="card-header">
+            <h2><span class="material-icons-round">people</span> العملاء</h2>
+        </div>
+        <div class="table-responsive">
             <table class="data-table">
                 <thead><tr><th>الاسم</th><th>الهاتف</th><th>الإجراءات</th></tr></thead>
                 <tbody>
                     {% for customer in results.customers %}
-                        <tr>
-                            <td>{{ customer.name }}</td>
-                            <td>{{ customer.phone|default:'-' }}</td>
-                            <td><a class="btn btn-secondary" href="{% url 'customer_details' customer.pk %}">عرض</a></td>
-                        </tr>
+                    <tr data-href="{% url 'customer_details' customer.pk %}">
+                        <td><strong>{{ customer.name }}</strong></td>
+                        <td>{{ customer.phone|default:'-' }}</td>
+                        <td><a class="btn btn-secondary btn-sm" href="{% url 'customer_details' customer.pk %}"><span class="material-icons-round">visibility</span></a></td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
     {% endif %}
 
     {% if results.cars %}
-        <div class="section-card">
-            <div class="section-card-header"><h2>السيارات</h2></div>
+    <div class="card animate-fadeIn">
+        <div class="card-header">
+            <h2><span class="material-icons-round">directions_car</span> السيارات</h2>
+        </div>
+        <div class="table-responsive">
             <table class="data-table">
                 <thead><tr><th>الشركة/الموديل</th><th>اللوحة</th><th>العميل</th><th>الإجراءات</th></tr></thead>
                 <tbody>
                     {% for car in results.cars %}
-                        <tr>
-                            <td>{{ car.make }} {{ car.model }}</td>
-                            <td>{{ car.license_plate|default:'-' }}</td>
-                            <td>{{ car.customer.name }}</td>
-                            <td><a class="btn btn-secondary" href="{% url 'car_details' car.pk %}">عرض</a></td>
-                        </tr>
+                    <tr data-href="{% url 'car_details' car.pk %}">
+                        <td><strong>{{ car.make }} {{ car.model }}</strong></td>
+                        <td><span class="badge badge-info">{{ car.license_plate|default:'-' }}</span></td>
+                        <td>{{ car.customer.name }}</td>
+                        <td><a class="btn btn-secondary btn-sm" href="{% url 'car_details' car.pk %}"><span class="material-icons-round">visibility</span></a></td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
     {% endif %}
 
     {% if results.repairs %}
-        <div class="section-card">
-            <div class="section-card-header"><h2>الإصلاحات</h2></div>
+    <div class="card animate-fadeIn">
+        <div class="card-header">
+            <h2><span class="material-icons-round">build</span> الإصلاحات</h2>
+        </div>
+        <div class="table-responsive">
             <table class="data-table">
                 <thead><tr><th>رقم الإصلاح</th><th>الوصف</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
                 <tbody>
                     {% for repair in results.repairs %}
-                        <tr>
-                            <td>#{{ repair.pk }}</td>
-                            <td>{{ repair.description|truncatechars:50 }}</td>
-                            <td>{{ repair.get_status_display }}</td>
-                            <td><a class="btn btn-secondary" href="{% url 'repair_details' repair.pk %}">عرض</a></td>
-                        </tr>
+                    <tr data-href="{% url 'repair_details' repair.pk %}">
+                        <td><strong>#{{ repair.pk }}</strong></td>
+                        <td>{{ repair.description|truncatechars:50 }}</td>
+                        <td><span class="badge {% if repair.status == 'completed' %}badge-success{% elif repair.status == 'in_progress' %}badge-warning{% else %}badge-info{% endif %}">{{ repair.get_status_display }}</span></td>
+                        <td><a class="btn btn-secondary btn-sm" href="{% url 'repair_details' repair.pk %}"><span class="material-icons-round">visibility</span></a></td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
     {% endif %}
 {% endif %}
 {% endblock %}

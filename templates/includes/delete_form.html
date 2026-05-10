@@ -1,4 +1,8 @@
 <form method="post" action="{{ action_url }}" class="delete-form" style="display:inline" data-confirm="{{ confirm_message|default:'هل أنت متأكد من الحذف؟' }}">
-{% csrf_token %}
-<button type="submit" class="btn btn-danger">{{ label|default:'حذف' }}</button>
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger {% if not label %}btn-icon btn-sm{% endif %}" title="{{ label|default:'حذف' }}">
+        <span class="material-icons-round">delete</span>
+        {% if label %}<span>{{ label }}</span>{% endif %}
+    </button>
 </form>
+

@@ -1,40 +1,94 @@
 {% extends 'base.html' %}
+{% block title %}الفواتير{% endblock %}
 {% block content %}
-{% url 'add_invoice' as add_url %}
-{% include 'includes/page_header.html' with title='الفواتير' subtitle='عرض وطباعة فواتير الإصلاح' action_url=add_url action_label='إضافة فاتورة' %}
-<div class="section-card">
-<table class="data-table">
-<thead><tr><th>الرقم</th><th>التاريخ</th><th>العميل</th><th>السيارة</th><th>الحالة</th><th>الإجمالي</th><th>الفاتورة</th></tr></thead>
-<tbody>
-{% for invoice in page_obj %}
-<tr>
-<td>{{ invoice.pk }}</td>
-<td>{{ invoice.date }}</td>
-<td>{{ invoice.car.customer.name }}</td>
-<td>{{ invoice.car }}</td>
-<td><span class="badge {% if invoice.status == 'completed' %}badge-success{% elif invoice.status == 'cancelled' %}badge-danger{% elif invoice.status == 'in_progress' %}badge-warning{% else %}badge-info{% endif %}">{{ invoice.get_status_display }}</span></td>
-<td>{{ invoice.total_cost|floatformat:2 }} د.ل</td>
-<td><a class="btn btn-primary" href="{% url 'view_invoice' invoice.pk %}">عرض</a></td>
-</tr>
-{% empty %}
-<tr><td colspan="7">لا توجد فواتير.</td></tr>
-{% endfor %}
-</tbody>
-</table>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">receipt</span>
+        </div>
+        <div>
+            <h1>الفواتير</h1>
+            <p>عرض وطباعة فواتير الإصلاح</p>
+        </div>
+    </div>
+    <div class="actions">
+        <a href="{% url 'create_direct_invoice' %}" class="btn btn-primary">
+            <span class="material-icons-round">point_of_sale</span>
+            <span>بيع مباشر (بدون مركبة)</span>
+        </a>
+    </div>
 </div>
+
+<div class="card animate-fadeIn">
+    <div class="card-header">
+        <h2><span class="material-icons-round">receipt_long</span> سجل الفواتير</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>رقم الفاتورة</th>
+                    <th>التاريخ</th>
+                    <th>العميل</th>
+                    <th>السيارة</th>
+                    <th>الحالة</th>
+                    <th>الإجمالي</th>
+                    <th class="no-print">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for invoice in page_obj %}
+            <tr data-href="{% url 'view_invoice' invoice.pk %}">
+                <td><strong>#{{ invoice.pk }}</strong></td>
+                <td>{{ invoice.date|date:'Y-m-d' }}</td>
+                <td>{{ invoice.get_customer.name|default:'نقدي' }}</td>
+                <td>
+                    {% if invoice.is_direct_sale %}
+                    <span class="badge badge-info">بيع مباشر</span>
+                    {% else %}
+                    {{ invoice.car }}
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge 
+                        {% if invoice.status == 'completed' %}badge-success
+                        {% elif invoice.status == 'cancelled' %}badge-danger
+                        {% elif invoice.status == 'in_progress' %}badge-warning
+                        {% else %}badge-info{% endif %}">
+                        {{ invoice.get_status_display }}
+                    </span>
+                </td>
+                <td><strong>{{ invoice.total_cost|floatformat:2 }} <small>د.ل</small></strong></td>
+                <td class="actions no-print" onclick="event.stopPropagation();">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'view_invoice' invoice.pk %}" title="عرض">
+                        <span class="material-icons-round">visibility</span>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">
+                <div class="empty-state">
+                    <span class="material-icons-round">receipt_long</span>
+                    <h3>لا توجد فواتير مسجلة</h3>
+                </div>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {% if page_obj.has_other_pages %}
 <div class="pagination">
-<span class="step-links">
-{% if page_obj.has_previous %}
-<a href="?page=1{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; أول</a>
-<a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">سابق</a>
-{% endif %}
-<span class="current">صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}</span>
-{% if page_obj.has_next %}
-<a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">التالي</a>
-<a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">آخر &raquo;</a>
-{% endif %}
-</span>
+    {% if page_obj.has_previous %}
+    <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">first_page</span></a>
+    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">navigate_before</span></a>
+    {% endif %}
+    <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">navigate_next</span></a>
+    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">last_page</span></a>
+    {% endif %}
 </div>
 {% endif %}
 {% endblock %}

@@ -1,47 +1,150 @@
 {% extends 'base.html' %}
+{% block title %}تفاصيل الإصلاح #{{ repair.pk }}{% endblock %}
 {% block content %}
-{% include 'includes/page_header.html' with title='تفاصيل الإصلاح' subtitle=invoice_number %}
-<div class="detail-grid">
-<div class="section-card">
-<p>السيارة: <a href="{% url 'car_details' repair.car.pk %}">{{ repair.car }}</a></p>
-<p>العميل: <a href="{% url 'customer_details' repair.car.customer.pk %}">{{ repair.car.customer.name }}</a></p>
-<p>العامل: {{ repair.worker|default:'-' }}</p>
-<p>الحالة: <span class="badge {% if repair.status == 'completed' %}badge-success{% elif repair.status == 'cancelled' %}badge-danger{% elif repair.status == 'in_progress' %}badge-warning{% else %}badge-info{% endif %}">{{ repair.get_status_display }}</span></p>
-<p>التاريخ: {{ repair.date }}</p>
-<p>الوصف: {{ repair.description }}</p>
-<p>ملاحظات: {{ repair.notes|default:'-' }}</p>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">build</span>
+        </div>
+        <div>
+            <h1>أمر إصلاح #{{ repair.pk }}</h1>
+            <p>{{ repair.date|date:'Y-m-d' }}</p>
+        </div>
+    </div>
+    <div class="actions no-print">
+        <a href="{% url 'view_invoice' repair.pk %}" class="btn btn-primary">
+            <span class="material-icons-round">receipt_long</span>
+            <span>عرض الفاتورة</span>
+        </a>
+        <a href="{% url 'edit_repair' repair.pk %}" class="btn btn-secondary">
+            <span class="material-icons-round">edit</span>
+            <span>تعديل</span>
+        </a>
+    </div>
 </div>
-<div class="section-card">
-<div class="actions">
-<a class="btn btn-warning" href="{% url 'edit_repair' repair.pk %}">تعديل</a>
-<a class="btn btn-primary" href="{% url 'view_invoice' repair.pk %}">عرض الفاتورة</a>
-<a class="btn btn-secondary" href="{% url 'add_repair_item' repair.pk %}">إضافة عنصر</a>
-{% url 'delete_repair' repair.pk as delete_url %}
-{% include 'includes/delete_form.html' with action_url=delete_url confirm_message='هل أنت متأكد من حذف هذا الإصلاح؟' %}
+
+<div class="two-col animate-fadeIn">
+    <div class="card">
+        <div class="card-header">
+            <h2><span class="material-icons-round">info</span> البيانات الأساسية</h2>
+        </div>
+        <div class="card-content">
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="detail-label">العميل</span>
+                    <span class="detail-value">
+                        {% if repair.get_customer %}
+                        <a href="{% url 'customer_details' repair.get_customer.pk %}">{{ repair.get_customer.name }}</a>
+                        {% else %}
+                        عميل نقدي
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">المركبة / النوع</span>
+                    <span class="detail-value">
+                        {% if repair.is_direct_sale %}
+                        <span class="badge badge-info">بيع مباشر</span>
+                        {% else %}
+                        <a href="{% url 'car_details' repair.car.pk %}">{{ repair.car }}</a>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">العامل المسؤول</span>
+                    <span class="detail-value">{{ repair.worker|default:'-' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">الحالة</span>
+                    <span class="detail-value">
+                        <span class="badge 
+                            {% if repair.status == 'completed' %}badge-success
+                            {% elif repair.status == 'cancelled' %}badge-danger
+                            {% elif repair.status == 'in_progress' %}badge-warning
+                            {% else %}badge-info{% endif %}">
+                            {{ repair.get_status_display }}
+                        </span>
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">الوصف</span>
+                    <span class="detail-value">{{ repair.description|default:'-' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2><span class="material-icons-round">receipt_long</span> ملخص الفاتورة</h2>
+        </div>
+        <div class="card-content">
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="detail-label">إجمالي العمل</span>
+                    <span class="detail-value">{{ repair.labor_total|floatformat:2 }} د.ل</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">إجمالي القطع</span>
+                    <span class="detail-value">{{ repair.parts_total|floatformat:2 }} د.ل</span>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="summary-row" style="padding: 0; border: 0; background: transparent;">
+                <span class="detail-label" style="font-size: var(--font-size-lg); color: var(--text); font-weight: 700;">الإجمالي النهائي</span>
+                <span class="detail-value" style="font-size: var(--font-size-2xl); color: var(--primary); font-weight: 800;">{{ repair.total_cost|floatformat:2 }} <small>د.ل</small></span>
+            </div>
+        </div>
+    </div>
 </div>
-<table class="data-table">
-<thead><tr><th>#</th><th>النوع</th><th>الوصف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>الإجراءات</th></tr></thead>
-<tbody>
-{% for item in repair.items.all %}
-<tr>
-<td>{{ forloop.counter }}</td>
-<td>{{ item.item_type }}</td>
-<td>{{ item.description }}</td>
-<td>{{ item.quantity }}</td>
-<td>{{ item.price|floatformat:2 }}</td>
-<td>{{ item.total|floatformat:2 }}</td>
-<td class="actions">
-<a class="btn btn-warning" href="{% url 'edit_repair_item' repair.pk item.pk %}">تعديل</a>
-{% url 'delete_repair_item' item.pk as delete_url %}
-{% include 'includes/delete_form.html' with action_url=delete_url %}
-</td>
-</tr>
-{% empty %}
-<tr><td colspan="7">لا توجد عناصر داخل الإصلاح.</td></tr>
-{% endfor %}
-</tbody>
-<tfoot><tr><th colspan="5">الإجمالي</th><th colspan="2">{{ repair.total_cost|floatformat:2 }} د.ل</th></tr></tfoot>
-</table>
-</div>
+
+<div class="card animate-fadeIn" style="animation-delay: 0.2s;">
+    <div class="card-header">
+        <h2><span class="material-icons-round">list</span> عناصر الإصلاح</h2>
+        <a href="{% url 'add_repair_item' repair.pk %}" class="btn btn-secondary btn-sm">
+            <span class="material-icons-round">add</span>
+            <span>إضافة عنصر</span>
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>النوع</th>
+                    <th>الوصف</th>
+                    <th>الكمية</th>
+                    <th>سعر الوحدة</th>
+                    <th>الإجمالي</th>
+                    <th class="no-print">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in repair.items.all %}
+            <tr>
+                <td><span class="badge {% if item.item_type == 'قطع غيار' %}badge-info{% else %}badge-primary{% endif %}">{{ item.item_type }}</span></td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.price|floatformat:2 }}</td>
+                <td><strong>{{ item.total|floatformat:2 }}</strong></td>
+                <td class="actions no-print">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'edit_repair_item' repair.pk item.pk %}" title="تعديل">
+                        <span class="material-icons-round">edit</span>
+                    </a>
+                    {% url 'delete_repair_item' item.pk as delete_url %}
+                    {% include 'includes/delete_form.html' with action_url=delete_url label=' ' %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">
+                <div class="empty-state" style="padding: 2rem;">
+                    <span class="material-icons-round">post_add</span>
+                    <h3>لا توجد عناصر مضافة بعد</h3>
+                </div>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

@@ -152,7 +152,9 @@ class Repair(models.Model):
         (STATUS_CANCELLED, "ملغي"),
     ]
 
-    car = models.ForeignKey(Car, on_delete=models.PROTECT, related_name="repairs")
+    car = models.ForeignKey(Car, on_delete=models.PROTECT, related_name="repairs", null=True, blank=True)
+    customer = models.ForeignKey("Customer", on_delete=models.PROTECT, related_name="direct_repairs", null=True, blank=True)
+    is_direct_sale = models.BooleanField(default=False)
     worker = models.ForeignKey(Worker, on_delete=models.SET_NULL, null=True, blank=True, related_name="repairs")
     description = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
@@ -179,6 +181,8 @@ class Repair(models.Model):
         ]
 
     def __str__(self):
+        if self.is_direct_sale:
+            return f"Direct Sale #{self.pk}"
         return f"Repair #{self.pk} - {self.car}"
 
     def save(self, *args, **kwargs):
@@ -187,6 +191,12 @@ class Repair(models.Model):
         if self.status != self.STATUS_COMPLETED:
             self.date_completed = None
         super().save(*args, **kwargs)
+
+    @property
+    def get_customer(self):
+        if self.car:
+            return self.car.customer
+        return self.customer
 
     def recalculate_total(self):
         self.total_cost = sum(item.total for item in self.items.all())

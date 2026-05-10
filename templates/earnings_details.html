@@ -1,69 +1,127 @@
 {% extends 'base.html' %}
+{% block title %}تفاصيل الأرباح | {{ category }}{% endblock %}
 {% block content %}
-{% include 'includes/page_header.html' with title='تفاصيل الأرباح' subtitle=category %}
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">insights</span>
+        </div>
+        <div>
+            <h1>تحليل الفئة: {{ category }}</h1>
+            <p>تحليل تفصيلي للإيرادات والتكاليف</p>
+        </div>
+    </div>
+    <div class="actions no-print">
+        <a href="{% url 'earnings' %}" class="btn btn-secondary">
+            <span class="material-icons-round">arrow_forward</span>
+            <span>العودة للتحليل العام</span>
+        </a>
+    </div>
+</div>
 
-<section class="stats-grid compact">
+<section class="stats-grid animate-stagger mb-4">
     <article class="stat-card">
-        <div class="stat-icon icon-green"><span class="material-icons-round">arrow_upward</span></div>
+        <div class="stat-icon icon-green"><span class="material-icons-round">add_chart</span></div>
         <div class="stat-info">
-            <span class="stat-label">الإيراد</span>
-            <span class="stat-value">{{ details.revenue|floatformat:2 }}</span>
+            <span class="stat-label">إجمالي الإيراد</span>
+            <span class="stat-value">{{ details.revenue|floatformat:2 }} <small>د.ل</small></span>
         </div>
     </article>
     <article class="stat-card">
-        <div class="stat-icon icon-red"><span class="material-icons-round">arrow_downward</span></div>
+        <div class="stat-icon icon-red"><span class="material-icons-round">shopping_cart_checkout</span></div>
         <div class="stat-info">
-            <span class="stat-label">التكلفة</span>
-            <span class="stat-value">{{ details.cost|floatformat:2 }}</span>
+            <span class="stat-label">إجمالي التكلفة</span>
+            <span class="stat-value">{{ details.cost|floatformat:2 }} <small>د.ل</small></span>
         </div>
     </article>
-    <article class="stat-card">
-        <div class="stat-icon"><span class="material-icons-round">trending_up</span></div>
+    <article class="stat-card" style="border-color: var(--primary); background: var(--primary-light);">
+        <div class="stat-icon icon-blue"><span class="material-icons-round">payments</span></div>
         <div class="stat-info">
-            <span class="stat-label">الربح</span>
-            <span class="stat-value">{{ details.profit|floatformat:2 }}</span>
+            <span class="stat-label">صافي الربح</span>
+            <span class="stat-value" style="color: var(--primary-dark);">{{ details.profit|floatformat:2 }} <small>د.ل</small></span>
         </div>
     </article>
     <article class="stat-card">
         <div class="stat-icon icon-amber"><span class="material-icons-round">inventory_2</span></div>
         <div class="stat-info">
-            <span class="stat-label">العناصر</span>
+            <span class="stat-label">عدد العناصر</span>
             <span class="stat-value">{{ details.items_count }}</span>
         </div>
     </article>
 </section>
 
-<div class="section-card">
-    <table class="data-table">
-        <thead><tr><th>الإصلاح</th><th>العميل</th><th>السيارة</th><th>الوصف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-        <tbody>
-            {% for item in details.items %}
+<div class="card animate-fadeIn">
+    <div class="card-header">
+        <h2><span class="material-icons-round">list_alt</span> سجل العمليات الفردية</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
                 <tr>
-                    <td><a href="{% url 'repair_details' item.repair.pk %}">#{{ item.repair.pk }}</a></td>
+                    <th>الأمر</th>
+                    <th>العميل</th>
+                    <th>السيارة</th>
+                    <th>الوصف</th>
+                    <th class="text-center">الكمية</th>
+                    <th class="text-end">السعر</th>
+                    <th class="text-end">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in details.items %}
+                <tr data-href="{% url 'repair_details' item.repair.pk %}">
+                    <td><strong>#{{ item.repair.pk }}</strong></td>
                     <td>{{ item.repair.car.customer.name }}</td>
                     <td>{{ item.repair.car }}</td>
                     <td>{{ item.description }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>{{ item.price|floatformat:2 }}</td>
-                    <td>{{ item.total|floatformat:2 }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end">{{ item.price|floatformat:2 }}</td>
+                    <td class="text-end"><strong>{{ item.total|floatformat:2 }}</strong></td>
                 </tr>
-            {% empty %}
-                <tr><td colspan="7">لا توجد بيانات في هذه الفترة.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                {% empty %}
+                <tr><td colspan="7">
+                    <div class="empty-state">
+                        <span class="material-icons-round">query_stats</span>
+                        <h3>لا توجد بيانات لهذه الفترة</h3>
+                    </div>
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 {% if category == 'services' %}
-<div class="section-card">
-    <div class="section-card-header"><h2>رواتب العمال المحسوبة ضمن تكلفة الخدمات</h2></div>
-    <ul class="plain-list">
-        {% for salary in salary_records %}
-            <li>{{ salary.worker.name }} — {{ salary.amount|floatformat:2 }} — {{ salary.date }}</li>
-        {% empty %}
-            <li>لا توجد سجلات رواتب مدفوعة.</li>
-        {% endfor %}
-    </ul>
+<div class="card animate-fadeIn" style="animation-delay: 0.2s; margin-top: 2rem;">
+    <div class="card-header">
+        <h2><span class="material-icons-round">account_balance_wallet</span> رواتب العمال (تكلفة الخدمات)</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>العامل</th>
+                    <th>المبلغ</th>
+                    <th>التاريخ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for salary in salary_records %}
+                <tr>
+                    <td><strong>{{ salary.worker.name }}</strong></td>
+                    <td>{{ salary.amount|floatformat:2 }} <small>د.ل</small></td>
+                    <td>{{ salary.date|date:'Y-m-d' }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3">
+                    <div class="empty-state" style="padding: 2rem;">
+                        <h3>لا توجد سجلات رواتب.</h3>
+                    </div>
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endif %}
 {% endblock %}

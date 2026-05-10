@@ -1,29 +1,80 @@
 {% extends 'base.html' %}
+{% block title %}تفاصيل العميل | {{ customer.name }}{% endblock %}
 {% block content %}
-{% include 'includes/page_header.html' with title=customer.name subtitle='تفاصيل العميل' %}
-<div class="detail-grid">
-<div class="section-card">
-<h2>البيانات الأساسية</h2>
-<p>الهاتف: {{ customer.phone|default:'-' }}</p>
-<p>النوع: <span class="badge {% if customer.customer_type == 'تاجر' %}badge-primary{% else %}badge-info{% endif %}">{{ customer.customer_type }}</span></p>
-<p>العنوان: {{ customer.address|default:'-' }}</p>
-<div class="actions" style="margin-top:1rem">
-<a class="btn btn-warning" href="{% url 'edit_customer' customer.pk %}">تعديل</a>
-{% url 'add_car' as add_car_url %}
-<a class="btn btn-secondary" href="{% url 'add_car' %}">إضافة سيارة</a>
-{% url 'delete_customer' customer.pk as delete_url %}
-{% include 'includes/delete_form.html' with action_url=delete_url confirm_message='هل أنت متأكد من حذف هذا العميل؟' %}
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">person</span>
+        </div>
+        <div>
+            <h1>{{ customer.name }}</h1>
+            <p>{{ customer.customer_type }}</p>
+        </div>
+    </div>
+    <div class="actions no-print">
+        <a href="{% url 'edit_customer' customer.pk %}" class="btn btn-secondary">
+            <span class="material-icons-round">edit</span>
+            <span>تعديل</span>
+        </a>
+        <a href="{% url 'add_car' %}?customer={{ customer.pk }}" class="btn btn-primary">
+            <span class="material-icons-round">add_circle</span>
+            <span>إضافة سيارة</span>
+        </a>
+    </div>
 </div>
-</div>
-<div class="section-card">
-<h2>السيارات</h2>
-<ul class="plain-list">
-{% for car in customer.cars.all %}
-<li><a href="{% url 'car_details' car.pk %}">{{ car }}</a></li>
-{% empty %}
-<li>لا توجد سيارات مرتبطة.</li>
-{% endfor %}
-</ul>
-</div>
+
+<div class="two-col animate-fadeIn">
+    <div class="card">
+        <div class="card-header">
+            <h2><span class="material-icons-round">contact_page</span> بيانات الاتصال</h2>
+        </div>
+        <div class="card-content">
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="detail-label">رقم الهاتف</span>
+                    <span class="detail-value">{{ customer.phone|default:'-' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">العنوان</span>
+                    <span class="detail-value">{{ customer.address|default:'-' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">تاريخ التسجيل</span>
+                    <span class="detail-value">{{ customer.created_at|date:'Y-m-d' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2><span class="material-icons-round">directions_car</span> سيارات العميل</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead><tr><th>السيارة</th><th>اللوحة</th><th class="no-print">الإجراءات</th></tr></thead>
+                <tbody>
+                {% for car in customer.cars.all %}
+                <tr data-href="{% url 'car_details' car.pk %}">
+                    <td><strong>{{ car.make }} {{ car.model }}</strong></td>
+                    <td><span class="badge badge-info">{{ car.plate_number }}</span></td>
+                    <td class="actions no-print" onclick="event.stopPropagation();">
+                        <a class="btn btn-secondary btn-sm" href="{% url 'edit_car' car.pk %}" title="تعديل">
+                            <span class="material-icons-round">edit</span>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3">
+                    <div class="empty-state" style="padding: 1rem;">
+                        <span class="material-icons-round">no_sim</span>
+                        <h3>لا توجد سيارات مسجلة</h3>
+                    </div>
+                </td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

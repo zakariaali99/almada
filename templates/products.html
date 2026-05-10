@@ -1,58 +1,97 @@
 {% extends 'base.html' %}
+{% block title %}المخزون والمنتجات{% endblock %}
 {% block content %}
-{% url 'add_product' as add_url %}
-{% include 'includes/page_header.html' with title='المنتجات' subtitle='إدارة المخزون والأسعار' action_url=add_url action_label='إضافة منتج' %}
-<div class="section-card">
-<form method="get" class="search-form mb-3">
-<input type="text" name="q" placeholder="ابحث عن منتج..." value="{{ query|default:'' }}">
-<button type="submit" class="btn btn-secondary"><span class="material-icons-round">search</span></button>
-<a class="btn {% if show_inactive %}btn-primary{% else %}btn-secondary{% endif %}" href="?show_inactive={% if show_inactive %}0{% else %}1{% endif %}{% if query %}&q={{ query }}{% endif %}">{% if show_inactive %}إخفاء المؤرشف{% else %}عرض المؤرشف{% endif %}</a>
-</form>
-<table class="data-table">
-<thead><tr><th>الاسم</th><th>النوع</th><th>سعر الشراء</th><th>جملة</th><th>قطاعي</th><th>الكمية</th><th>الإجراءات</th></tr></thead>
-<tbody>
-{% for product in page_obj %}
-<tr{% if not product.is_active %} style="opacity:0.55;"{% endif %}>
-<td>{{ product.name }}{% if not product.is_active %} <span class="badge badge-danger">مؤرشف</span>{% endif %}</td>
-<td><span class="badge {% if product.product_type == 'قطع غيار' %}badge-primary{% else %}badge-warning{% endif %}">{{ product.product_type }}</span></td>
-<td>{{ product.price_bought|floatformat:2 }}</td><td>{{ product.wholesale_price|floatformat:2 }}</td><td>{{ product.retail_price|floatformat:2 }}</td>
-<td>{% if product.quantity < 5 %}<span class="badge badge-danger">{{ product.quantity }}</span>{% else %}{{ product.quantity }}{% endif %}</td>
-<td class="actions">
-<a class="btn btn-secondary" href="{% url 'product_details' product.pk %}">عرض</a>
-{% if product.is_active %}
-<a class="btn btn-warning" href="{% url 'edit_product' product.pk %}">تعديل</a>
-{% url 'delete_product' product.pk as delete_url %}
-{% include 'includes/delete_form.html' with action_url=delete_url confirm_message='هل أنت متأكد من أرشفة هذا المنتج؟' label='أرشفة' %}
-{% else %}
-<form method="post" action="{% url 'edit_product' product.pk %}" style="display:inline">{% csrf_token %}</form>
-<a class="btn btn-success" href="{% url 'edit_product' product.pk %}">إعادة تفعيل</a>
-{% endif %}
-</td>
-</tr>
-{% empty %}
-<tr><td colspan="7">لا توجد منتجات.</td></tr>
-{% endfor %}
-</tbody>
-</table>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">inventory_2</span>
+        </div>
+        <div>
+            <h1>المخزون</h1>
+            <p>إدارة قطع الغيار والمنتجات</p>
+        </div>
+    </div>
+    <a href="{% url 'add_product' %}" class="btn btn-primary">
+        <span class="material-icons-round">add_circle</span>
+        <span>إضافة منتج جديد</span>
+    </a>
+</div>
+
+<div class="card animate-fadeIn">
+    <div class="card-header">
+        <h2><span class="material-icons-round">inventory</span> قائمة المنتجات</h2>
+    </div>
+    <div class="card-content">
+        <form method="get" class="search-form mb-4">
+            <input type="text" name="q" placeholder="ابحث عن منتج بالاسم..." value="{{ query|default:'' }}">
+            <button type="submit" class="btn btn-secondary">
+                <span class="material-icons-round">search</span>
+            </button>
+            <a class="btn {% if show_inactive %}btn-primary{% else %}btn-secondary{% endif %}" href="?show_inactive={% if show_inactive %}0{% else %}1{% endif %}{% if query %}&q={{ query }}{% endif %}">
+                <span class="material-icons-round">{% if show_inactive %}visibility_off{% else %}visibility{% endif %}</span>
+                <span>{% if show_inactive %}إخفاء المؤرشف{% else %}عرض المؤرشف{% endif %}</span>
+            </a>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>المنتج</th>
+                    <th>النوع</th>
+                    <th>قطاعي</th>
+                    <th>الكمية</th>
+                    <th class="no-print">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for product in page_obj %}
+            <tr data-href="{% url 'product_details' product.pk %}" {% if not product.is_active %}style="opacity: 0.6;"{% endif %}>
+                <td>
+                    <strong>{{ product.name }}</strong>
+                    {% if not product.is_active %}
+                    <span class="badge badge-danger">مؤرشف</span>
+                    {% endif %}
+                </td>
+                <td><span class="badge {% if product.product_type == 'قطع غيار' %}badge-info{% else %}badge-warning{% endif %}">{{ product.product_type }}</span></td>
+                <td>{{ product.retail_price|floatformat:2 }} <small>د.ل</small></td>
+                <td>
+                    {% if product.quantity < 5 %}
+                    <span class="badge badge-danger">{{ product.quantity }} (منخفض)</span>
+                    {% else %}
+                    <span class="badge badge-success">{{ product.quantity }}</span>
+                    {% endif %}
+                </td>
+                <td class="actions no-print" onclick="event.stopPropagation();">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'edit_product' product.pk %}" title="تعديل">
+                        <span class="material-icons-round">edit</span>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">
+                <div class="empty-state">
+                    <span class="material-icons-round">inventory</span>
+                    <h3>لا توجد منتجات مطابقة للبحث</h3>
+                </div>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 {% if page_obj.has_other_pages %}
 <div class="pagination">
-<span class="step-links">
-{% if page_obj.has_previous %}
-<a href="?page=1{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; أول</a>
-<a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">سابق</a>
-{% endif %}
-
-<span class="current">
-صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
-</span>
-
-{% if page_obj.has_next %}
-<a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">التالي</a>
-<a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">آخر &raquo;</a>
-{% endif %}
-</span>
+    {% if page_obj.has_previous %}
+    <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">first_page</span></a>
+    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">navigate_before</span></a>
+    {% endif %}
+    <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">navigate_next</span></a>
+    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">last_page</span></a>
+    {% endif %}
 </div>
 {% endif %}
 {% endblock %}

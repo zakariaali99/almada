@@ -5,15 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}نظام الخوارزمي{% endblock %}</title>
+    
+    <!-- Theme Initialization -->
+    <script>
+        const theme = localStorage.getItem("theme") || "light";
+        if (theme === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    </script>
+
     <!-- Localized Dependencies -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
     <!-- Core CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
     <link rel="stylesheet" href="{% static 'css/fixes.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
     {% block styles %}{% endblock %}
 </head>
 <body>
@@ -22,13 +31,13 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a class="brand" href="{% url 'dashboard' %}">
-                    <img src="{% static 'img/logo.png' %}" alt="Logo" class="logo-img">
+                    <img src="{% static 'img/logo.png' %}" alt="Logo" style="width: 32px; height: 32px; object-fit: contain;">
                     <span>الخوارزمي</span>
                 </a>
             </div>
             <nav class="sidebar-nav">
                 <form action="{% url 'global_search' %}" method="get" class="sidebar-search no-print">
-                    <input type="text" name="q" placeholder="بحث..." value="{{ query|default:'' }}">
+                    <input type="text" name="q" placeholder="بحث سريع..." value="{{ query|default:'' }}">
                     <button type="submit"><span class="material-icons-round">search</span></button>
                 </form>
                 {% for item in navigation_links %}
@@ -41,7 +50,7 @@
             <div class="sidebar-footer">
                 <form action="{% url 'logout' %}" method="post" class="logout-form">
                     {% csrf_token %}
-                    <button type="submit" class="nav-item logout-link">
+                    <button type="submit" class="nav-item logout-link" style="background:none; border:none; width:100%; cursor:pointer;">
                         <span class="material-icons-round">logout</span>
                         <span class="nav-label">تسجيل الخروج</span>
                     </button>
@@ -55,18 +64,41 @@
                 <button class="menu-toggle" id="menuToggle">
                     <span class="material-icons-round">menu</span>
                 </button>
-                <span class="mobile-brand">الخوارزمي</span>
+                <div class="mobile-brand">
+                    <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 32px; object-fit: contain;">
+                    <span>الخوارزمي</span>
+                </div>
+                <button class="theme-toggle" id="themeToggleMobile">
+                    <span class="material-icons-round">dark_mode</span>
+                </button>
             </header>
 
             <div class="page-shell">
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;" class="no-print">
+                    <button class="theme-toggle" id="themeToggle" title="تبديل الوضع الليلي">
+                        <span class="material-icons-round">dark_mode</span>
+                    </button>
+                </div>
+
                 {% if messages %}
                 <div class="messages">
                     {% for message in messages %}
-                        <div class="flash flash-{{ message.tags|default:'info' }}">{{ message }}</div>
+                        <div class="flash flash-{{ message.tags|default:'info' }}">
+                            <span class="material-icons-round">
+                                {% if message.tags == 'success' %}check_circle
+                                {% elif message.tags == 'error' %}error
+                                {% elif message.tags == 'warning' %}warning
+                                {% else %}info{% endif %}
+                            </span>
+                            {{ message }}
+                        </div>
                     {% endfor %}
                 </div>
                 {% endif %}
-                {% block content %}{% endblock %}
+                
+                <div class="animate-fadeIn">
+                    {% block content %}{% endblock %}
+                </div>
             </div>
         </main>
     </div>
@@ -77,7 +109,7 @@
     <script src="{% static 'js/arabic-date.js' %}"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Delete confirmation for all forms with delete-form class
+        // Delete confirmation
         document.querySelectorAll(".delete-form").forEach(function (form) {
             form.addEventListener("submit", function (e) {
                 var message = form.getAttribute("data-confirm") || "هل أنت متأكد من الحذف؟";
@@ -87,10 +119,12 @@
                     text: message,
                     icon: "warning",
                     showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#3085d6",
+                    confirmButtonColor: "var(--danger)",
+                    cancelButtonColor: "var(--text-muted)",
                     confirmButtonText: "نعم، احذفه!",
-                    cancelButtonText: "إلغاء"
+                    cancelButtonText: "إلغاء",
+                    background: 'var(--surface)',
+                    color: 'var(--text)'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         form.submit();
@@ -99,22 +133,14 @@
             });
         });
         
-        // Mobile menu toggle
-        var toggle = document.getElementById('menuToggle');
-        var sidebar = document.getElementById('sidebar');
-        if (toggle && sidebar) {
-            toggle.addEventListener('click', function() {
-                sidebar.classList.toggle('open');
-            });
-            // Close on outside click
-            document.addEventListener('click', function(e) {
-                if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) {
-                    sidebar.classList.remove('open');
-                }
-            });
+        // Sync mobile theme toggle
+        const themeToggleMobile = document.getElementById("themeToggleMobile");
+        if (themeToggleMobile) {
+            themeToggleMobile.addEventListener("click", () => document.getElementById("themeToggle").click());
         }
     });
     </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
+

@@ -1,4 +1,7 @@
 import shutil
+import base64
+import qrcode
+from io import BytesIO
 from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
@@ -11,6 +14,8 @@ from django.db import models, transaction
 from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
 
 from .models import Car, Customer, Product, Repair, RepairItem, Worker, WorkerSalary
 
@@ -343,3 +348,39 @@ def update_repair_item(item, description, quantity, price, item_type, product=No
         adjust_product_stock(product, -quantity)
     recalculate_repair_total(item.repair)
     return item
+
+
+def generate_qr_code_base64(data: str) -> str:
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+
+def generate_invoice_pdf(repair: Repair, request) -> bytes:
+    qr_data = f"Invoice: {invoice_number(repair)} | Total: {repair.total_cost} | Date: {repair.date}"
+    qr_base64 = generate_qr_code_base64(qr_data)
+    
+    context = {
+        "repair": repair,
+        "invoice_number": invoice_number(repair),
+        "qr_base64": qr_base64,
+        "is_pdf": True,
+    }
+    
+    html_string = render_to_string("invoice_pdf_template.html", context, request=request)
+    
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html_string.encode("UTF-8")), result, encoding='UTF-8')
+    if not pdf.err:
+        return result.getvalue()
+    return b""

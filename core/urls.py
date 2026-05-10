@@ -29,6 +29,7 @@ urlpatterns = [
     path("invoices/", views.invoices, name="invoices"),
     path("invoice/<int:repair_pk>/", views.view_invoice, name="view_invoice"),
     path("add_invoice/", views.add_invoice, name="add_invoice"),
+    path("create_direct_invoice/", views.create_direct_invoice, name="create_direct_invoice"),
     path("products/", views.products, name="products"),
     path("add_product/", views.add_product, name="add_product"),
     path("edit_product/<int:pk>/", views.edit_product, name="edit_product"),

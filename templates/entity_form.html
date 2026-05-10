@@ -1,9 +1,40 @@
 {% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
 {% block content %}
-{% include 'includes/page_header.html' with title=page_title subtitle=page_subtitle %}
-<form method="post" class="stack-form section-card">
-    {% csrf_token %}
-    {% include 'includes/form_fields.html' with form=form %}
-    <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
-</form>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">edit_note</span>
+        </div>
+        <div>
+            <h1>{{ page_title }}</h1>
+            <p>{{ page_subtitle }}</p>
+        </div>
+    </div>
+    <div class="actions no-print">
+        <a href="javascript:history.back()" class="btn btn-secondary">
+            <span class="material-icons-round">arrow_forward</span>
+            <span>رجوع</span>
+        </a>
+    </div>
+</div>
+
+<div class="form-container animate-fadeIn">
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+            <div class="card-content">
+                <div class="stack-form">
+                    {% include 'includes/form_fields.html' with form=form %}
+                </div>
+            </div>
+            <div class="card-footer" style="text-align: center;">
+                <button type="submit" class="btn btn-primary btn-lg full-width">
+                    <span class="material-icons-round">save</span>
+                    <span>{{ submit_label|default:'حفظ التغييرات' }}</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

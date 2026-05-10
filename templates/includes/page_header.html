@@ -1,9 +1,22 @@
-<div class="page-header">
-<div>
-<h1>{{ title }}</h1>
-{% if subtitle %}<p>{% if query_label %}{{ query_label }}{% endif %}{{ subtitle }}</p>{% endif %}
+<div class="page-header animate-fadeIn">
+    <div class="page-header-info">
+        {% if icon %}
+        <div class="page-header-icon">
+            <span class="material-icons-round">{{ icon }}</span>
+        </div>
+        {% endif %}
+        <div>
+            <h1>{{ title }}</h1>
+            {% if subtitle %}<p>{{ subtitle }}</p>{% endif %}
+        </div>
+    </div>
+    {% if action_url %}
+    <div class="actions">
+        <a href="{{ action_url }}" class="btn btn-primary">
+            {% if action_icon %}<span class="material-icons-round">{{ action_icon }}</span>{% endif %}
+            <span>{{ action_label }}</span>
+        </a>
+    </div>
+    {% endif %}
 </div>
-{% if action_url %}
-<a href="{{ action_url }}" class="btn btn-primary">{{ action_label }}</a>
-{% endif %}
-</div>
+

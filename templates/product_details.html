@@ -1,29 +1,98 @@
 {% extends 'base.html' %}
+{% block title %}تفاصيل المنتج | {{ product.name }}{% endblock %}
 {% block content %}
-{% include 'includes/page_header.html' with title=product.name subtitle='تفاصيل المنتج والأرباح' %}
-<div class="detail-grid">
-<div class="section-card">
-<p>النوع: <span class="badge {% if product.product_type == 'قطع غيار' %}badge-primary{% else %}badge-warning{% endif %}">{{ product.product_type }}</span></p>
-<p>سعر الشراء: <strong>{{ product.price_bought|floatformat:2 }}</strong> د.ل</p>
-<p>سعر الجملة: <strong>{{ product.wholesale_price|floatformat:2 }}</strong> د.ل</p>
-<p>سعر القطاعي: <strong>{{ product.retail_price|floatformat:2 }}</strong> د.ل</p>
-<p>الكمية الحالية: <strong>{% if product.quantity < 5 %}<span class="badge badge-danger">{{ product.quantity }}</span>{% else %}{{ product.quantity }}{% endif %}</strong></p>
-<p>إجمالي الربح: <strong class="text-primary">{{ product.total_profit|floatformat:2 }}</strong> د.ل</p>
-<div class="actions" style="margin-top:1rem">
-<a class="btn btn-warning" href="{% url 'edit_product' product.pk %}">تعديل</a>
-{% url 'delete_product' product.pk as delete_url %}
-{% include 'includes/delete_form.html' with action_url=delete_url %}
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">inventory_2</span>
+        </div>
+        <div>
+            <h1>{{ product.name }}</h1>
+            <p>بيانات المخزون والتحليل المالي</p>
+        </div>
+    </div>
+    <div class="actions no-print">
+        <a href="{% url 'edit_product' product.pk %}" class="btn btn-secondary">
+            <span class="material-icons-round">edit</span>
+            <span>تعديل المنتج</span>
+        </a>
+    </div>
 </div>
-</div>
-<div class="section-card">
-<h2>سجل الاستخدام</h2>
-<ul class="plain-list">
-{% for item in product.repair_items.all %}
-<li><a href="{% url 'repair_details' item.repair.pk %}">إصلاح #{{ item.repair.pk }}</a> — {{ item.repair.car.customer.name }} — {{ item.quantity }} × {{ item.price|floatformat:2 }}</li>
-{% empty %}
-<li>لم يتم استخدام المنتج بعد.</li>
-{% endfor %}
-</ul>
-</div>
+
+<div class="two-col animate-fadeIn">
+    <div class="card">
+        <div class="card-header">
+            <h2><span class="material-icons-round">info</span> تفاصيل الصنف</h2>
+        </div>
+        <div class="card-content">
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="detail-label">النوع</span>
+                    <span class="detail-value">
+                        <span class="badge {% if product.product_type == 'قطع غيار' %}badge-info{% else %}badge-warning{% endif %}">
+                            {{ product.product_type }}
+                        </span>
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">الكمية المتوفرة</span>
+                    <span class="detail-value">
+                        {% if product.quantity < 5 %}
+                        <span class="badge badge-danger">{{ product.quantity }} (منخفض)</span>
+                        {% else %}
+                        <span class="badge badge-success">{{ product.quantity }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">سعر الشراء</span>
+                    <span class="detail-value">{{ product.price_bought|floatformat:2 }} <small>د.ل</small></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">سعر البيع (قطاعي)</span>
+                    <span class="detail-value"><strong>{{ product.retail_price|floatformat:2 }} <small>د.ل</small></strong></span>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="summary-row" style="padding: 0; border: 0; background: transparent;">
+                <span class="detail-label">إجمالي الربح المحقق</span>
+                <span class="detail-value" style="font-size: var(--font-size-xl); color: var(--primary); font-weight: 800;">{{ product.total_profit|floatformat:2 }} <small>د.ل</small></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2><span class="material-icons-round">history</span> سجل الحركة</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>رقم الأمر</th>
+                        <th>الكمية المباعة</th>
+                        <th>التاريخ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in product.repair_items.all|slice:":10" %}
+                    <tr data-href="{% url 'repair_details' item.repair.pk %}">
+                        <td><strong>#{{ item.repair.pk }}</strong></td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.repair.date|date:'Y-m-d' }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3">
+                        <div class="empty-state" style="padding: 1rem;">
+                            <span class="material-icons-round">receipt_long</span>
+                            <h3>لم يتم بيع هذا المنتج بعد</h3>
+                        </div>
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

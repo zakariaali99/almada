@@ -1,43 +1,260 @@
 {% extends 'base.html' %}
-{% block title %}فاتورة {{ invoice_number }}{% endblock %}
+{% block title %}فاتورة #{{ repair.pk }} | {{ repair.car.customer.name }}{% endblock %}
 {% block content %}
-<section class="invoice-sheet">
-<div class="invoice-head">
-<div>
-<h1>فاتورة</h1>
-<p>{{ invoice_number }}</p>
+<div class="page-header no-print">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">receipt_long</span>
+        </div>
+        <div>
+            <h1>معاينة الفاتورة</h1>
+            <p>مراجعة وطباعة أمر الإصلاح</p>
+        </div>
+    </div>
+    <div class="actions">
+        <button class="btn btn-primary" onclick="downloadPDF()">
+            <span class="material-icons-round">picture_as_pdf</span>
+            <span>تحميل PDF</span>
+        </button>
+        <button class="btn btn-secondary" onclick="window.print()">
+            <span class="material-icons-round">print</span>
+            <span>طباعة (متصفح)</span>
+        </button>
+        <a class="btn btn-secondary" href="{% url 'repair_details' repair.pk %}">
+            <span class="material-icons-round">arrow_forward</span>
+            <span>العودة للأمر</span>
+        </a>
+    </div>
 </div>
-<div class="actions no-print">
-<button class="btn btn-primary" onclick="window.print()"><span class="material-icons-round">print</span> طباعة</button>
-<a class="btn btn-secondary" href="javascript:history.back()">رجوع</a>
-</div>
-</div>
-<div class="detail-grid">
-<div class="section-card">
-<p>العميل: <strong><a href="{% url 'customer_details' repair.car.customer.pk %}">{{ repair.car.customer.name }}</a></strong></p>
-<p>السيارة: <strong>{{ repair.car }}</strong></p>
-<p>العامل: <strong>{{ repair.worker|default:'-' }}</strong></p>
-</div>
-<div class="section-card">
-<p>تاريخ الإصلاح: <strong>{{ repair.date }}</strong></p>
-<p>الحالة: <span class="badge {% if repair.status == 'completed' %}badge-success{% elif repair.status == 'cancelled' %}badge-danger{% elif repair.status == 'in_progress' %}badge-warning{% else %}badge-info{% endif %}">{{ repair.get_status_display }}</span></p>
-<p>الوصف: <strong>{{ repair.description }}</strong></p>
-</div>
-</div>
-<table class="data-table">
-<thead><tr><th>الوصف</th><th>النوع</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-<tbody>
-{% for item in repair.items.all %}
-<tr>
-<td>{{ item.description }}</td>
-<td><span class="badge badge-primary">{{ item.item_type }}</span></td>
-<td>{{ item.quantity }}</td>
-<td>{{ item.price|floatformat:2 }} د.ل</td>
-<td>{{ item.total|floatformat:2 }} د.ل</td>
-</tr>
-{% endfor %}
-</tbody>
-<tfoot><tr><th colspan="4">المجموع</th><th>{{ repair.total_cost|floatformat:2 }} د.ل</th></tr></tfoot>
-</table>
+
+<section class="invoice-sheet animate-fadeIn">
+    <div class="invoice-head">
+        <div class="brand">
+            <h1 class="brand-name">الخوارزمي</h1>
+            <p class="brand-tagline">لصيانة السيارات والمحركات</p>
+        </div>
+        <div class="invoice-meta">
+            <h2>فاتورة صيانة</h2>
+            <p>رقم الأمر: <strong>#{{ repair.pk }}</strong></p>
+            <p>التاريخ: <strong>{{ repair.date|date:'Y-m-d' }}</strong></p>
+        </div>
+    </div>
+
+    <div class="invoice-details-grid">
+        <div class="invoice-col">
+            <h3 class="label">بيانات العميل</h3>
+            <p class="value"><strong>{{ repair.get_customer.name|default:'عميل نقدي' }}</strong></p>
+            <p class="sub-value">{{ repair.get_customer.phone|default:'' }}</p>
+            <p class="sub-value">{{ repair.get_customer.address|default:'' }}</p>
+        </div>
+        <div class="invoice-col">
+            <h3 class="label">بيانات المركبة</h3>
+            {% if repair.is_direct_sale %}
+            <p class="value"><strong>بيع مباشر</strong></p>
+            <p class="sub-value">المسؤول: {{ repair.worker|default:'-' }}</p>
+            {% else %}
+            <p class="value"><strong>{{ repair.car }}</strong></p>
+            <p class="sub-value">لوحة: {{ repair.car.plate_number|default:'-' }}</p>
+            <p class="sub-value">المسؤول: {{ repair.worker|default:'-' }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="invoice-table-container">
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>الصنف / الخدمة</th>
+                    <th>النوع</th>
+                    <th class="text-center">الكمية</th>
+                    <th class="text-end">سعر الوحدة</th>
+                    <th class="text-end">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in repair.items.all %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td><span class="item-type-badge">{{ item.item_type }}</span></td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end">{{ item.price|floatformat:2 }}</td>
+                    <td class="text-end"><strong>{{ item.total|floatformat:2 }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="4" class="text-end">الإجمالي النهائي</td>
+                    <td class="text-end"><strong>{{ repair.total_cost|floatformat:2 }} <small>د.ل</small></strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="invoice-footer">
+        <div class="notes">
+            <h4>ملاحظات:</h4>
+            <p>{{ repair.notes|default:'شكراً لتعاملكم معنا.' }}</p>
+        </div>
+        <div class="signature">
+            <p>توقيع الورشة</p>
+            <div class="sig-line"></div>
+        </div>
+    </div>
 </section>
+
+<style>
+/* Invoice Print Specific Styles */
+.invoice-sheet {
+    background: white;
+    padding: 3rem;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    margin: 0 auto;
+    max-width: 900px;
+    color: #1a1a1a;
+}
+
+[data-theme="dark"] .invoice-sheet {
+    background: white; /* Always white for print consistency */
+    color: #1a1a1a;
+}
+
+.invoice-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+}
+
+.brand-name {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin: 0;
+}
+
+.brand-tagline {
+    color: #666;
+    margin: 0;
+}
+
+.invoice-meta {
+    text-align: left;
+}
+
+.invoice-meta h2 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.invoice-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.invoice-col .label {
+    font-size: 0.9rem;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.25rem;
+}
+
+.invoice-col .value {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.invoice-col .sub-value {
+    color: #666;
+    margin: 0.25rem 0 0 0;
+}
+
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 3rem;
+}
+
+.invoice-table th {
+    background: #f8fafc;
+    padding: 1rem;
+    text-align: right;
+    border-bottom: 2px solid #eee;
+    color: #444;
+}
+
+.invoice-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.invoice-table .text-center { text-align: center; }
+.invoice-table .text-end { text-align: left; }
+
+.total-row td {
+    border-top: 2px solid #333;
+    font-size: 1.4rem;
+    padding-top: 1.5rem;
+}
+
+.invoice-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 4rem;
+}
+
+.signature {
+    text-align: center;
+    width: 200px;
+}
+
+.sig-line {
+    border-top: 1px solid #333;
+    margin-top: 3rem;
+}
+
+@media print {
+    .no-print, .sidebar, .top-header, .page-header { display: none !important; }
+    body { background: white !important; margin: 0; padding: 0; }
+    .page-shell { padding: 0 !important; display: block !important; }
+    .main-content { margin: 0 !important; padding: 0 !important; }
+    
+    .invoice-sheet {
+        box-shadow: none !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        border: none !important;
+    }
+
+    /* Fixed form styles for print */
+    @page {
+        margin: 1cm;
+        size: A4 portrait;
+    }
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+function downloadPDF() {
+    const element = document.querySelector('.invoice-sheet');
+    const opt = {
+        margin:       0.5,
+        filename:     'invoice_{{ repair.pk }}.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+}
+</script>
 {% endblock %}
+

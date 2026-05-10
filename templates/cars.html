@@ -1,44 +1,87 @@
 {% extends 'base.html' %}
+{% block title %}السيارات{% endblock %}
 {% block content %}
-{% url 'add_car' as add_url %}
-{% include 'includes/page_header.html' with title='السيارات' subtitle='كل السيارات المسجلة في النظام' action_url=add_url action_label='إضافة سيارة' %}
-<div class="section-card">
-    <table class="data-table">
-        <thead><tr><th>الشركة</th><th>الموديل</th><th>السنة</th><th>اللوحة</th><th>العميل</th><th>الإجراءات</th></tr></thead>
-        <tbody>
-            {% for car in page_obj %}
-                <tr>
-                    <td>{{ car.make }}</td><td>{{ car.model|default:'-' }}</td><td>{{ car.year|default:'-' }}</td><td>{{ car.license_plate|default:'-' }}</td><td>{{ car.customer.name }}</td>
-                    <td class="actions">
-                        <a class="btn btn-secondary" href="{% url 'car_details' car.pk %}">عرض</a>
-                        <a class="btn btn-warning" href="{% url 'edit_car' car.pk %}">تعديل</a>
-                        {% url 'delete_car' car.pk as delete_url %}
-                        {% include 'includes/delete_form.html' with action_url=delete_url %}
-                    </td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="6">لا توجد سيارات.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">directions_car</span>
+        </div>
+        <div>
+            <h1>السيارات</h1>
+            <p>إدارة سجلات السيارات المسجلة</p>
+        </div>
+    </div>
+    <a href="{% url 'add_car' %}" class="btn btn-primary">
+        <span class="material-icons-round">add_circle</span>
+        <span>إضافة سيارة جديدة</span>
+    </a>
 </div>
+
+<div class="card animate-fadeIn">
+    <div class="card-header">
+        <h2><span class="material-icons-round">garage</span> قائمة السيارات</h2>
+    </div>
+    <div class="card-content">
+        <form method="get" class="search-form mb-4">
+            <input type="text" name="q" placeholder="ابحث برقم اللوحة أو الموديل..." value="{{ query|default:'' }}">
+            <button type="submit" class="btn btn-secondary">
+                <span class="material-icons-round">search</span>
+            </button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>المصنع</th>
+                    <th>الموديل</th>
+                    <th>السنة</th>
+                    <th>اللوحة</th>
+                    <th>العميل</th>
+                    <th class="no-print">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for car in page_obj %}
+            <tr data-href="{% url 'car_details' car.pk %}">
+                <td><strong>{{ car.make }}</strong></td>
+                <td>{{ car.model|default:'-' }}</td>
+                <td>{{ car.year|default:'-' }}</td>
+                <td><span class="badge badge-info">{{ car.plate_number|default:'-' }}</span></td>
+                <td>{{ car.customer.name }}</td>
+                <td class="actions no-print" onclick="event.stopPropagation();">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'edit_car' car.pk %}" title="تعديل">
+                        <span class="material-icons-round">edit</span>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">
+                <div class="empty-state">
+                    <span class="material-icons-round">no_sim</span>
+                    <h3>لا توجد سيارات مطابقة للبحث</h3>
+                </div>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {% if page_obj.has_other_pages %}
 <div class="pagination">
     <span class="step-links">
         {% if page_obj.has_previous %}
-            <a href="?page=1">&laquo; أول</a>
-            <a href="?page={{ page_obj.previous_page_number }}">سابق</a>
+        <a href="?page=1{% if query %}&q={{ query }}{% endif %}"><span class="material-icons-round">first_page</span></a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}"><span class="material-icons-round">navigate_before</span></a>
         {% endif %}
-
-        <span class="current">
-            صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
-        </span>
-
+        <span class="current">صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}</span>
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">التالي</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}">آخر &raquo;</a>
+        <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}"><span class="material-icons-round">navigate_next</span></a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}"><span class="material-icons-round">last_page</span></a>
         {% endif %}
     </span>
 </div>
 {% endif %}
 {% endblock %}
+

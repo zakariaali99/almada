@@ -1,42 +1,135 @@
 {% extends 'base.html' %}
+{% block title %}تفاصيل العامل | {{ worker.name }}{% endblock %}
 {% block content %}
-{% url 'add_worker_salary' worker.pk as salary_url %}
-{% include 'includes/page_header.html' with title=worker.name subtitle='تفاصيل العامل وسجل الرواتب' action_url=salary_url action_label='إضافة راتب' %}
-<div class="detail-grid">
-<div class="section-card">
-<p>الهاتف: {{ worker.phone|default:'-' }}</p>
-<p>العنوان: {{ worker.address|default:'-' }}</p>
-<p>الراتب الأساسي: {{ worker.salary|floatformat:2 }} د.ل</p>
-<h2>الإصلاحات</h2>
-<ul class="plain-list">
-{% for repair in worker.repairs.all %}
-<li><a href="{% url 'repair_details' repair.pk %}">إصلاح #{{ repair.pk }}</a></li>
-{% empty %}
-<li>لا توجد إصلاحات مرتبطة.</li>
-{% endfor %}
-</ul>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">badge</span>
+        </div>
+        <div>
+            <h1>{{ worker.name }}</h1>
+            <p>سجل الموظف والمدفوعات</p>
+        </div>
+    </div>
+    <div class="actions no-print">
+        <a href="{% url 'add_worker_salary' worker.pk %}" class="btn btn-primary">
+            <span class="material-icons-round">payments</span>
+            <span>إضافة راتب / سلفة</span>
+        </a>
+        <a href="{% url 'edit_worker' worker.pk %}" class="btn btn-secondary">
+            <span class="material-icons-round">edit</span>
+            <span>تعديل البيانات</span>
+        </a>
+    </div>
 </div>
-<div class="section-card">
-<h2>سجلات الرواتب</h2>
-<table class="data-table">
-<thead><tr><th>المبلغ</th><th>التاريخ</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
-<tbody>
-{% for salary in worker.salaries.all %}
-<tr>
-<td>{{ salary.amount|floatformat:2 }} د.ل</td>
-<td>{{ salary.date }}</td>
-<td><span class="badge {% if salary.status == 'مدفوع' %}badge-success{% elif salary.status == 'مخصوم' %}badge-warning{% else %}badge-info{% endif %}">{{ salary.status }}</span></td>
-<td class="actions">
-<a class="btn btn-warning" href="{% url 'edit_worker_salary' salary.pk %}">تعديل</a>
-{% url 'delete_worker_salary' salary.pk as delete_url %}
-{% include 'includes/delete_form.html' with action_url=delete_url %}
-</td>
-</tr>
-{% empty %}
-<tr><td colspan="4">لا توجد سجلات.</td></tr>
-{% endfor %}
-</tbody>
-</table>
+
+<div class="two-col animate-fadeIn">
+    <div class="card">
+        <div class="card-header">
+            <h2><span class="material-icons-round">contact_phone</span> معلومات الموظف</h2>
+        </div>
+        <div class="card-content">
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="detail-label">رقم الهاتف</span>
+                    <span class="detail-value">{{ worker.phone|default:'-' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">العنوان</span>
+                    <span class="detail-value">{{ worker.address|default:'-' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">الراتب الأساسي</span>
+                    <span class="detail-value"><strong>{{ worker.salary|floatformat:2 }} <small>د.ل</small></strong></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">تاريخ الانضمام</span>
+                    <span class="detail-value">{{ worker.created_at|date:'Y-m-d' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2><span class="material-icons-round">history</span> أحدث المهام</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>أمر الإصلاح</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for repair in worker.repairs.all|slice:":5" %}
+                    <tr data-href="{% url 'repair_details' repair.pk %}">
+                        <td><strong>#{{ repair.pk }}</strong></td>
+                        <td>{{ repair.date|date:'Y-m-d' }}</td>
+                        <td>
+                            <span class="badge {% if repair.status == 'completed' %}badge-success{% else %}badge-info{% endif %}">
+                                {{ repair.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3">
+                        <div class="empty-state" style="padding: 1rem;">
+                            <span class="material-icons-round">assignment_late</span>
+                            <h3>لا توجد مهام مسجلة</h3>
+                        </div>
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<div class="card animate-fadeIn" style="animation-delay: 0.2s;">
+    <div class="card-header">
+        <h2><span class="material-icons-round">account_balance_wallet</span> سجل الرواتب والمدفوعات</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>المبلغ</th>
+                    <th>التاريخ</th>
+                    <th>الحالة / النوع</th>
+                    <th class="no-print">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for salary in worker.salaries.all %}
+                <tr>
+                    <td><strong>{{ salary.amount|floatformat:2 }} <small>د.ل</small></strong></td>
+                    <td>{{ salary.date|date:'Y-m-d' }}</td>
+                    <td>
+                        <span class="badge {% if salary.status == 'مدفوع' %}badge-success{% elif salary.status == 'مخصوم' %}badge-danger{% else %}badge-info{% endif %}">
+                            {{ salary.status }}
+                        </span>
+                    </td>
+                    <td class="actions no-print">
+                        <a class="btn btn-secondary btn-sm" href="{% url 'edit_worker_salary' salary.pk %}" title="تعديل">
+                            <span class="material-icons-round">edit</span>
+                        </a>
+                        {% url 'delete_worker_salary' salary.pk as delete_url %}
+                        {% include 'includes/delete_form.html' with action_url=delete_url label=' ' %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4">
+                    <div class="empty-state">
+                        <span class="material-icons-round">payments</span>
+                        <h3>لا توجد سجلات رواتب حتى الآن</h3>
+                    </div>
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

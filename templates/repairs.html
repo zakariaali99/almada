@@ -1,72 +1,120 @@
 {% extends 'base.html' %}
+{% block title %}الإصلاحات{% endblock %}
 {% block content %}
-{% url 'add_repair' as add_url %}
-{% include 'includes/page_header.html' with title='الإصلاحات' subtitle='إدارة أوامر الصيانة والفواتير' action_url=add_url action_label='إضافة إصلاح' %}
-<div class="section-card">
-<form method="get" class="filters-grid">
-<select name="status">
-<option value="">كل الحالات</option>
-{% for value, label in status_choices %}
-<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
-{% endfor %}
-</select>
-<select name="customer">
-<option value="">كل العملاء</option>
-{% for customer in customers %}
-<option value="{{ customer.pk }}" {% if request.GET.customer == customer.pk|stringformat:'s' %}selected{% endif %}>{{ customer.name }}</option>
-{% endfor %}
-</select>
-<select name="worker">
-<option value="">كل العمال</option>
-{% for worker in workers %}
-<option value="{{ worker.pk }}" {% if request.GET.worker == worker.pk|stringformat:'s' %}selected{% endif %}>{{ worker.name }}</option>
-{% endfor %}
-</select>
-<input type="date" name="start_date" value="{{ request.GET.start_date }}">
-<input type="date" name="end_date" value="{{ request.GET.end_date }}">
-<button type="submit" class="btn btn-secondary">تصفية</button>
-</form>
-<table class="data-table">
-<thead><tr><th>التاريخ</th><th>السيارة</th><th>العميل</th><th>العامل</th><th>الحالة</th><th>التكلفة</th><th>الإجراءات</th></tr></thead>
-<tbody>
-{% for repair in page_obj %}
-<tr>
-<td>{{ repair.date }}</td>
-<td>{{ repair.car }}</td>
-<td>{{ repair.car.customer.name }}</td>
-<td>{{ repair.worker|default:'-' }}</td>
-<td><span class="badge {% if repair.status == 'completed' %}badge-success{% elif repair.status == 'cancelled' %}badge-danger{% elif repair.status == 'in_progress' %}badge-warning{% else %}badge-info{% endif %}">{{ repair.get_status_display }}</span></td>
-<td>{{ repair.total_cost|floatformat:2 }}</td>
-<td class="actions">
-<a class="btn btn-secondary" href="{% url 'repair_details' repair.pk %}">عرض</a>
-<a class="btn btn-warning" href="{% url 'edit_repair' repair.pk %}">تعديل</a>
-{% url 'delete_repair' repair.pk as delete_url %}
-{% include 'includes/delete_form.html' with action_url=delete_url %}
-</td>
-</tr>
-{% empty %}
-<tr><td colspan="7">لا توجد إصلاحات.</td></tr>
-{% endfor %}
-</tbody>
-</table>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-header-icon">
+            <span class="material-icons-round">build</span>
+        </div>
+        <div>
+            <h1>الإصلاحات</h1>
+            <p>إدارة أوامر الصيانة والفواتير</p>
+        </div>
+    </div>
+    <a href="{% url 'add_repair' %}" class="btn btn-primary">
+        <span class="material-icons-round">add_circle</span>
+        <span>إضافة إصلاح</span>
+    </a>
 </div>
+
+<div class="card animate-fadeIn">
+    <div class="card-header">
+        <h2><span class="material-icons-round">handyman</span> سجل الإصلاحات</h2>
+    </div>
+    <div class="card-content">
+        <form method="get" class="filters-grid mb-4">
+            <div class="field">
+                <label>الحالة</label>
+                <select name="status">
+                    <option value="">كل الحالات</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>العميل</label>
+                <select name="customer">
+                    <option value="">كل العملاء</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.pk }}" {% if request.GET.customer == customer.pk|stringformat:'s' %}selected{% endif %}>{{ customer.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>من تاريخ</label>
+                <input type="date" name="start_date" value="{{ request.GET.start_date }}">
+            </div>
+            <div class="field">
+                <label>إلى تاريخ</label>
+                <input type="date" name="end_date" value="{{ request.GET.end_date }}">
+            </div>
+            <button type="submit" class="btn btn-secondary">
+                <span class="material-icons-round">filter_alt</span>
+                <span>تصفية</span>
+            </button>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>رقم الطلب</th>
+                    <th>التاريخ</th>
+                    <th>السيارة</th>
+                    <th>العميل</th>
+                    <th>الحالة</th>
+                    <th>الإجمالي</th>
+                    <th class="no-print">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for repair in page_obj %}
+            <tr data-href="{% url 'repair_details' repair.pk %}">
+                <td><strong>#{{ repair.pk }}</strong></td>
+                <td>{{ repair.date|date:'Y-m-d' }}</td>
+                <td>{{ repair.car }}</td>
+                <td>{{ repair.car.customer.name }}</td>
+                <td>
+                    <span class="badge 
+                        {% if repair.status == 'completed' %}badge-success
+                        {% elif repair.status == 'cancelled' %}badge-danger
+                        {% elif repair.status == 'in_progress' %}badge-warning
+                        {% else %}badge-info{% endif %}">
+                        {{ repair.get_status_display }}
+                    </span>
+                </td>
+                <td><strong>{{ repair.total_cost|floatformat:2 }} <small>د.ل</small></strong></td>
+                <td class="actions no-print" onclick="event.stopPropagation();">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'edit_repair' repair.pk %}" title="تعديل">
+                        <span class="material-icons-round">edit</span>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">
+                <div class="empty-state">
+                    <span class="material-icons-round">history_toggle_off</span>
+                    <h3>لا توجد إصلاحات مسجلة</h3>
+                </div>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {% if page_obj.has_other_pages %}
 <div class="pagination">
-<span class="step-links">
-{% if page_obj.has_previous %}
-<a href="?page=1{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; أول</a>
-<a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">سابق</a>
-{% endif %}
-
-<span class="current">
-صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
-</span>
-
-{% if page_obj.has_next %}
-<a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">التالي</a>
-<a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET|dictsort:'key' %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">آخر &raquo;</a>
-{% endif %}
-</span>
+    {% if page_obj.has_previous %}
+    <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">first_page</span></a>
+    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">navigate_before</span></a>
+    {% endif %}
+    <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">navigate_next</span></a>
+    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"><span class="material-icons-round">last_page</span></a>
+    {% endif %}
 </div>
 {% endif %}
 {% endblock %}

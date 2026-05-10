@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>فاتورة #{{ invoice_number }}</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            color: #333333;
+            font-size: 14px;
+            direction: rtl;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #06b6d4;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .brand {
+            font-size: 32px;
+            color: #06b6d4;
+            font-weight: bold;
+        }
+        .tagline {
+            font-size: 14px;
+            color: #666;
+        }
+        .meta-table {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        .meta-table td {
+            vertical-align: top;
+        }
+        .info-box {
+            background-color: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #475569;
+            font-size: 14px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .qr-code {
+            text-align: left;
+        }
+        .qr-code img {
+            width: 100px;
+            height: 100px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .items-table th {
+            background-color: #f1f5f9;
+            color: #334155;
+            padding: 10px;
+            text-align: right;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .text-center { text-align: center; }
+        .text-end { text-align: left; }
+        .total-row td {
+            background-color: #f8fafc;
+            font-weight: bold;
+            font-size: 16px;
+            border-top: 2px solid #06b6d4;
+            padding-top: 15px;
+            padding-bottom: 15px;
+        }
+        .footer {
+            margin-top: 50px;
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="brand">الخوارزمي</div>
+        <div class="tagline">لصيانة السيارات والمحركات</div>
+    </div>
+
+    <table class="meta-table">
+        <tr>
+            <td style="width: 35%;">
+                <div class="info-box">
+                    <h3>بيانات الفاتورة</h3>
+                    <strong>رقم الفاتورة:</strong> {{ invoice_number }}<br>
+                    <strong>التاريخ:</strong> {{ repair.date|date:'Y-m-d' }}<br>
+                    {% if repair.is_direct_sale %}
+                    <strong>النوع:</strong> بيع مباشر
+                    {% endif %}
+                </div>
+            </td>
+            <td style="width: 35%; padding-right: 15px;">
+                <div class="info-box">
+                    <h3>بيانات العميل</h3>
+                    <strong>العميل:</strong> {{ repair.get_customer.name|default:'نقدي' }}<br>
+                    {% if repair.get_customer.phone %}
+                    <strong>الهاتف:</strong> {{ repair.get_customer.phone }}<br>
+                    {% endif %}
+                    {% if repair.car %}
+                    <strong>المركبة:</strong> {{ repair.car }}<br>
+                    <strong>اللوحة:</strong> {{ repair.car.plate_number|default:'-' }}
+                    {% endif %}
+                </div>
+            </td>
+            <td style="width: 30%; text-align: left;">
+                <div class="qr-code">
+                    <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code">
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>الصنف / الخدمة</th>
+                <th style="width: 15%;">النوع</th>
+                <th class="text-center" style="width: 10%;">الكمية</th>
+                <th class="text-end" style="width: 15%;">السعر</th>
+                <th class="text-end" style="width: 15%;">الإجمالي</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in repair.items.all %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td>{{ item.item_type }}</td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td class="text-end">{{ item.price|floatformat:2 }}</td>
+                <td class="text-end">{{ item.total|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="4" class="text-end">الإجمالي النهائي</td>
+                <td class="text-end">{{ repair.total_cost|floatformat:2 }} د.ل</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="footer">
+        <p>شكراً لتعاملكم معنا. نتمنى لكم يوماً سعيداً.</p>
+        <p>النظام مشغل بواسطة Al-Khawarizmi Auto Shop Management</p>
+    </div>
+</body>
+</html>

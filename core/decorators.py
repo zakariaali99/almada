@@ -3,7 +3,7 @@ import time
 from django.core.cache import cache
 
 
-def rate_limit(key_prefix, max_attempts=5, window_seconds=300):
+def rate_limit(key_prefix, max_attempts=50, window_seconds=300):
     def decorator(view_func):
         def wrapper(request, *args, **kwargs):
             ip = request.META.get("REMOTE_ADDR", "unknown")
