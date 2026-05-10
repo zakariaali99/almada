@@ -29,9 +29,10 @@ from .forms import (
     WorkerSalaryForm,
     WorkshopSettingsForm,
     EmployeeCreateForm,
+    EmployeeChangeForm,
     ExpenseForm,
 )
-from .models import User, Car, Customer, Product, Repair, RepairItem, Worker, WorkerSalary, WorkshopSettings, Expense
+from .models import User, Car, Customer, Product, Repair, RepairItem, Worker, WorkerSalary, WorkshopSettings, Expense, ActivityLog
 from .services import (
     create_backup_copy,
     delete_repair_item as delete_repair_item_service,
@@ -835,6 +836,21 @@ def add_employee(request):
         messages.success(request, "تم إنشاء حساب الموظف بنجاح")
         return redirect("employees")
     return render(request, "add_employee.html", {"form": form, "page_title": "إضافة موظف"})
+
+
+@login_required
+def edit_employee(request, pk):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+    user = get_object_or_404(User, pk=pk)
+    # Prevent regular superuser from accidentally revoking their own superuser status unless intended, but allow them to edit themselves
+    form = EmployeeChangeForm(request.POST or None, instance=user)
+    if request.method == "POST" and form.is_valid():
+        user = form.save()
+        log_activity(request, "update", "User", user.pk, f"تعديل بيانات الموظف: {user.username}")
+        messages.success(request, "تم تحديث بيانات الموظف بنجاح")
+        return redirect("employees")
+    return render(request, "add_employee.html", {"form": form, "page_title": "تعديل بيانات موظف"})
 
 
 @login_required

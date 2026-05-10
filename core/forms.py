@@ -213,6 +213,34 @@ class EmployeeCreateForm(UserCreationForm):
         return user
 
 
+from django.contrib.auth.forms import UserChangeForm
+
+class EmployeeChangeForm(UserChangeForm):
+    password = None # We typically don't edit password here, or use default UserChangeForm behavior
+    phone = forms.CharField(label="رقم الهاتف", required=False, widget=forms.TextInput(attrs={"placeholder": "رقم هاتف الموظف..."}))
+    
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "phone", "username", "is_superuser"]
+        labels = {
+            "first_name": "الاسم الأول",
+            "last_name": "اللقب",
+            "username": "اسم المستخدم",
+            "is_superuser": "مدير نظام (يملك كافة الصلاحيات)",
+        }
+        help_texts = {
+            "username": "مطلوب. 150 حرفًا أو أقل. أحرف وأرقام و @/./+/-/_ فقط.",
+        }
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.phone = self.cleaned_data["phone"]
+        if commit:
+            user.save()
+        return user
+
+
+
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense

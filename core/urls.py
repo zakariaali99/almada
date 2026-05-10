@@ -55,6 +55,7 @@ urlpatterns = [
     path("settings/", views.settings_view, name="settings"),
     path("employees/", views.employees_list, name="employees"),
     path("add_employee/", views.add_employee, name="add_employee"),
+    path("edit_employee/<int:pk>/", views.edit_employee, name="edit_employee"),
     path("delete_employee/<int:pk>/", views.delete_employee, name="delete_employee"),
     path("activity_log/", views.activity_log_view, name="activity_log"),
     path("print_invoice/<int:repair_pk>/", views.print_invoice, name="print_invoice"),

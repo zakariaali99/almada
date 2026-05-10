@@ -274,8 +274,25 @@ class Repair(models.Model):
             return self.car.customer
         return self.customer
 
+    @property
+    def labor_total(self):
+        return sum(
+            (item.total for item in self.items.filter(item_type="خدمات")),
+            Decimal("0.00"),
+        )
+
+    @property
+    def parts_total(self):
+        return sum(
+            (item.total for item in self.items.exclude(item_type="خدمات")),
+            Decimal("0.00"),
+        )
+
     def recalculate_total(self):
-        self.total_cost = sum(item.total for item in self.items.all())
+        self.total_cost = sum(
+            (item.total for item in self.items.all()),
+            Decimal("0.00"),
+        )
         self.save(update_fields=["total_cost"])
 
 

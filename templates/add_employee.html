@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}إضافة موظف{% endblock %}
+{% block title %}{{ page_title|default:'إضافة موظف' }}{% endblock %}
 {% block content %}
 <div class="page-header">
     <div class="page-header-info">
@@ -7,8 +7,8 @@
             <span class="material-icons-round">person_add</span>
         </div>
         <div>
-            <h1>إضافة موظف جديد</h1>
-            <p>إنشاء حساب دخول جديد للمنظومة</p>
+            <h1>{{ page_title|default:'إضافة موظف جديد' }}</h1>
+            <p>إدارة حساب الدخول للمنظومة</p>
         </div>
     </div>
 </div>
@@ -31,7 +31,7 @@
             {% endfor %}
         </div>
         <div class="card-footer">
-            <button type="submit" class="btn btn-primary">إنشاء الحساب</button>
+            <button type="submit" class="btn btn-primary">حفظ البيانات</button>
             <a href="{% url 'employees' %}" class="btn btn-secondary">إلغاء</a>
         </div>
     </form>
