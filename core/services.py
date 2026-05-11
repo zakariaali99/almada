@@ -33,7 +33,10 @@ def validate_item_price(product: Optional[Product], submitted_price: Any, price_
 
 
 def recalculate_repair_total(repair: Repair) -> None:
-    repair.total_cost = sum(item.total for item in repair.items.all())
+    repair.total_cost = sum(
+        (item.total for item in repair.items.all()),
+        Decimal("0.00"),
+    )
     repair.save(update_fields=["total_cost"])
 
 
@@ -216,17 +219,17 @@ def earnings_snapshot(filter_type: str = "all", start_date=None, end_date=None) 
     }
 
     earnings = {}
-    total_revenue = 0
-    total_cost = 0
+    total_revenue = Decimal("0.00")
+    total_cost = Decimal("0.00")
     for key, qs in categories.items():
-        revenue = qs.aggregate(total=Sum("total"))["total"] or 0
+        revenue = qs.aggregate(total=Sum("total"))["total"] or Decimal("0.00")
         if key == "services":
-            cost = salary_qs.aggregate(total=Sum("amount"))["total"] or 0
+            cost = salary_qs.aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
         else:
             cost = sum(
                 (item.product.price_bought if item.product else Decimal("0.00")) * item.quantity
                 for item in qs
-            )
+            ) or Decimal("0.00")
         profit = revenue - cost
         earnings[key] = {
             "revenue": revenue,
@@ -243,12 +246,12 @@ def earnings_snapshot(filter_type: str = "all", start_date=None, end_date=None) 
         "cost": total_cost,
         "profit": total_revenue - total_cost,
     }
-    
+
     # Add Expenses
     expenses_data = {
-        "product": expense_qs.filter(expense_type="product").aggregate(total=Sum("amount"))["total"] or 0,
-        "workshop": expense_qs.filter(expense_type="workshop").aggregate(total=Sum("amount"))["total"] or 0,
-        "personal": expense_qs.filter(expense_type="personal").aggregate(total=Sum("amount"))["total"] or 0,
+        "product": expense_qs.filter(expense_type="product").aggregate(total=Sum("amount"))["total"] or Decimal("0.00"),
+        "workshop": expense_qs.filter(expense_type="workshop").aggregate(total=Sum("amount"))["total"] or Decimal("0.00"),
+        "personal": expense_qs.filter(expense_type="personal").aggregate(total=Sum("amount"))["total"] or Decimal("0.00"),
     }
     expenses_data["total"] = sum(expenses_data.values())
     
@@ -293,13 +296,13 @@ def get_dashboard_context() -> Dict[str, Any]:
     recent_customers = Customer.objects.prefetch_related("cars")[:5]
     
     # Calculate today's revenue (completed today)
-    today_revenue = completed_today.aggregate(total=Sum("total_cost"))["total"] or 0
-    
+    today_revenue = completed_today.aggregate(total=Sum("total_cost"))["total"] or Decimal("0.00")
+
     # Calculate today's expenses (worker salaries paid today)
     today_expenses = WorkerSalary.objects.filter(
-        status="مدفوع", 
+        status="مدفوع",
         payment_date__date=today
-    ).aggregate(total=Sum("amount"))["total"] or 0
+    ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
     
     # Calculate low stock products
     low_stock_products = Product.objects.filter(quantity__lt=5, is_active=True).count()
